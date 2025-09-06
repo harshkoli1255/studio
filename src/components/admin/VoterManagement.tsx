@@ -41,6 +41,7 @@ function AddVoterSubmitButton() {
 }
 
 function DeleteVoterButton({ voterId, onVoterDeleted }: { voterId: string, onVoterDeleted: (id: string) => void }) {
+    const { toast } = useToast();
     const handleDelete = async () => {
         const result = await deleteVoter(voterId);
         if(result.success) {
@@ -50,7 +51,6 @@ function DeleteVoterButton({ voterId, onVoterDeleted }: { voterId: string, onVot
              toast({ title: "Error", description: result.message, variant: 'destructive'})
         }
     }
-    const { toast } = useToast();
 
     return (
         <AlertDialog>
@@ -122,7 +122,7 @@ export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }
           <CardTitle>Voter List</CardTitle>
           <CardDescription>
             List of all registered voters and their unique codes.
-          </Description>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[400px]">
