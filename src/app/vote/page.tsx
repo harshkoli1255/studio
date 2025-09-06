@@ -8,7 +8,8 @@ import { LogOut } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function VotePage() {
-  const studentId = cookies().get('student-auth')?.value;
+  const cookieStore = cookies();
+  const studentId = cookieStore.get('student-auth')?.value;
   const user = studentId ? db.getUserById(studentId) : null;
   const candidates = db.getCandidates();
   const totalVotes = db.getTotalVotes();
