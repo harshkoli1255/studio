@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 import { db } from './data';
 import type { Candidate, User } from './types';
 import { summarizeVoteResults } from '@/ai/flows/summarize-vote-results';
-import { randomBytes } from 'crypto';
+import { parseVoters } from '@/ai/flows/parse-voters-flow';
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'hadmin123';
@@ -14,13 +14,15 @@ const ADMIN_COOKIE = 'admin-auth';
 const STUDENT_COOKIE = 'student-auth';
 
 // --- Helper Functions ---
-function generateActionId() {
-  return randomBytes(8).toString('hex');
-}
 
 async function fileToDataUrl(file: File): Promise<string> {
   const buffer = Buffer.from(await file.arrayBuffer());
   return `data:${file.type};base64,${buffer.toString('base64')}`;
+}
+
+async function fileToText(file: File): Promise<string> {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    return buffer.toString('utf-8');
 }
 
 // --- Schemas ---
@@ -53,6 +55,10 @@ const candidateSchema = z.object({
 const voterSchema = z.object({
   voterName: z.string().min(3, 'Voter name must be at least 3 characters long.'),
 });
+
+const csvFileSchema = z.instanceof(File)
+    .refine(file => file.size > 0, 'CSV file is required.')
+    .refine(file => file.type === 'text/csv', 'File must be a CSV.');
 
 
 // --- Server Actions ---
@@ -126,7 +132,7 @@ export async function castVote(candidateId: number) {
 }
 
 export async function addCandidate(prevState: any, formData: FormData): Promise<{ success: boolean; message: string; candidates: Candidate[] | null; actionId: string; }> {
-  const actionId = generateActionId();
+  const actionId = crypto.randomUUID();
   const parsed = candidateSchema.safeParse(Object.fromEntries(formData));
 
   if (!parsed.success) {
@@ -168,21 +174,48 @@ export async function deleteCandidate(candidateId: number) {
   }
 }
 
-export async function addVoter(prevState: any, formData: FormData): Promise<{success: boolean, message: string, voters: User[] | null, actionId: string}> {
-  const actionId = generateActionId();
+export async function addVoter(formData: FormData): Promise<{success: boolean, message: string, voters: User[] | null }> {
   const parsed = voterSchema.safeParse(Object.fromEntries(formData));
 
   if (!parsed.success) {
-    return { success: false, message: parsed.error.errors[0].message, voters: null, actionId };
+    return { success: false, message: parsed.error.errors[0].message, voters: null };
   }
 
   try {
     const updatedVoters = db.addVoter(parsed.data.voterName);
-    return { success: true, message: 'Voter added successfully.', voters: updatedVoters, actionId };
+    return { success: true, message: 'Voter added successfully.', voters: updatedVoters };
   } catch(e: any) {
-    return { success: false, message: e.message, voters: null, actionId };
+    return { success: false, message: e.message, voters: null };
   }
 }
+
+export async function addBulkVoters(voters: {name: string, code: string}[]) {
+    try {
+        const {voters: updatedVoters, addedCount, skippedCount} = db.addVoters(voters);
+        return { success: true, message: `${addedCount} voters added.`, voters: updatedVoters, addedCount, skippedCount };
+    } catch(e: any) {
+        return { success: false, message: "An error occurred while adding voters.", voters: null, addedCount: 0, skippedCount: 0 };
+    }
+}
+
+export async function parseVotersCsv(formData: FormData): Promise<{success: boolean, message: string, voters: {name: string, code: string}[] | null}> {
+    const file = formData.get('voterCsv');
+
+    const parsed = csvFileSchema.safeParse(file);
+    if(!parsed.success) {
+        return { success: false, message: parsed.error.errors[0].message, voters: null };
+    }
+    
+    try {
+        const csvText = await fileToText(parsed.data);
+        const result = await parseVoters(csvText);
+        return { success: true, message: "CSV parsed successfully.", voters: result.voters };
+    } catch (e: any) {
+         console.error('Error parsing CSV:', e);
+        return { success: false, message: "Could not parse CSV file. Please check the format.", voters: null };
+    }
+}
+
 
 export async function deleteVoter(voterId: string) {
   try {
