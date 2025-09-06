@@ -4,7 +4,6 @@
  * @fileOverview Parses a CSV file of voters and returns a structured array of user data.
  *
  * - parseVoters - A function that takes CSV data and returns parsed voter information.
- * - VoterDataSchema - The Zod schema for the output of an individual voter.
  * - ParseVotersOutput - The Zod schema for the array of voters.
  */
 
@@ -49,9 +48,9 @@ const parseVotersFlow = ai.defineFlow(
   },
   async (csvData) => {
     const { output } = await prompt(csvData);
-    if (!output) {
+    if (!output || !output.voters) {
       return { voters: [] };
     }
-    return output;
+    return { voters: output.voters };
   }
 );
