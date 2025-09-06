@@ -1,19 +1,31 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BarChart, Users, Percent, Vote, RefreshCcw, LogOut, UserCheck } from 'lucide-react';
+import { BarChart, Users, Percent, Vote, RefreshCcw, LogOut, UserCheck, Trash2 } from 'lucide-react';
 import type { Candidate, User } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Logo from '@/components/Logo';
 import CandidatesTable from './CandidatesTable';
 import CandidateForm from './CandidateForm';
-import { resetVotes, logout, addCandidate, addVoter, deleteVoter } from '@/lib/actions';
+import { resetVotes, logout, addCandidate, deleteCandidate } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import Summary from './Summary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import VoterManagement from './VoterManagement';
 import ElectionTimer from './ElectionTimer';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 interface AdminDashboardProps {
   initialCandidates: Candidate[];
@@ -49,17 +61,19 @@ export default function AdminDashboard({
   const leadingCandidate = candidates.length > 0 ? [...candidates].sort((a,b) => b.voteCount - a.voteCount)[0]?.name || 'N/A' : 'N/A';
 
   const handleReset = async () => {
-    if (confirm('Are you sure you want to reset all votes and election dates? This action cannot be undone.')) {
       await resetVotes();
       // Refetch or reset state after action
       window.location.reload();
       toast({ title: 'Success', description: 'The election has been fully reset.' });
-    }
   };
 
   const onCandidateAdded = (updatedCandidates: Candidate[]) => {
     setCandidates(updatedCandidates);
   };
+
+  const onCandidateDeleted = (candidateId: number) => {
+    setCandidates(prev => prev.filter(c => c.id !== candidateId));
+  }
   
   const onVoterAdded = (updatedVoters: User[]) => {
     setVoters(updatedVoters);
@@ -68,7 +82,6 @@ export default function AdminDashboard({
   const onVoterDeleted = (deletedVoterId: string) => {
     setVoters(prev => prev.filter(v => v.id !== deletedVoterId));
   }
-
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -152,7 +165,11 @@ export default function AdminDashboard({
                   <CardTitle>Live Vote Count</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CandidatesTable candidates={candidates} totalVotes={totalVotes} />
+                  <CandidatesTable 
+                    candidates={candidates} 
+                    totalVotes={totalVotes}
+                    onCandidateDeleted={onCandidateDeleted}
+                  />
                 </CardContent>
               </Card>
               
@@ -184,9 +201,25 @@ export default function AdminDashboard({
                   </CardHeader>
                   <CardContent className="space-y-2">
                      <p className="text-sm text-muted-foreground">This will permanently delete all votes and reset the election schedule. Candidates and voters will not be deleted.</p>
-                    <Button variant="destructive" onClick={handleReset} className="w-full">
-                      <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Votes
-                    </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                           <Button variant="destructive" className="w-full">
+                              <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Votes
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete all vote records and reset the election schedule. Candidates and voters will NOT be deleted.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleReset}>Continue</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                   </CardContent>
                 </Card>
             </div>

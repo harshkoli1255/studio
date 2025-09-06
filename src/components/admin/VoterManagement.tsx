@@ -12,6 +12,17 @@ import { addVoter, deleteVoter } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Trash2 } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 interface VoterManagementProps {
   voters: User[];
@@ -30,21 +41,37 @@ function AddVoterSubmitButton() {
 }
 
 function DeleteVoterButton({ voterId, onVoterDeleted }: { voterId: string, onVoterDeleted: (id: string) => void }) {
-    const { pending } = useFormStatus();
-    
-    const handleClick = async () => {
-        if (confirm('Are you sure you want to delete this voter?')) {
-           const result = await deleteVoter(voterId);
-           if(result.success) {
-                onVoterDeleted(voterId);
-           }
+    const handleDelete = async () => {
+        const result = await deleteVoter(voterId);
+        if(result.success) {
+            onVoterDeleted(voterId);
+            toast({ title: "Success", description: "Voter has been deleted."})
+        } else {
+             toast({ title: "Error", description: result.message, variant: 'destructive'})
         }
     }
+    const { toast } = useToast();
 
     return (
-        <Button variant="ghost" size="icon" onClick={handleClick} disabled={pending}>
-            <Trash2 className="text-destructive h-4 w-4"/>
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+             <Button variant="ghost" size="icon">
+                <Trash2 className="text-destructive h-4 w-4"/>
+              </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the voter and their associated vote.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
     )
 }
 
@@ -95,7 +122,7 @@ export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }
           <CardTitle>Voter List</CardTitle>
           <CardDescription>
             List of all registered voters and their unique codes.
-          </CardDescription>
+          </Description>
         </CardHeader>
         <CardContent>
           <ScrollArea className="h-[400px]">

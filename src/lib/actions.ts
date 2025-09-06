@@ -167,6 +167,17 @@ export async function addCandidate(prevState: any, formData: FormData): Promise<
     return { success: true, message: 'Candidate added successfully.', candidates: updatedCandidates, actionId };
 }
 
+
+export async function deleteCandidate(candidateId: number) {
+    try {
+        db.deleteCandidate(candidateId);
+        return { success: true, message: 'Candidate deleted successfully.' };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+
 export async function resetVotes() {
   db.resetVotes();
   return { message: 'All votes have been reset.' };

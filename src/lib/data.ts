@@ -83,7 +83,7 @@ function generateUniqueId(type: 'user' | 'candidate') {
 
 export const db = {
   getUserByNameAndCode: (name: string, code: string) => {
-    return data.users.find((user) => user.name.toLowerCase() === name.toLowerCase() && user.code === code);
+    return data.users.find((user) => user.name.toLowerCase() === name.toLowerCase() && user.code === code.toUpperCase());
   },
 
   getUserById: (id: string) => {
@@ -112,12 +112,14 @@ export const db = {
     if(userIndex === -1) {
         throw new Error('Voter not found.');
     }
+    // Also remove any votes by this user
+    data.votes = data.votes.filter(v => v.voterId !== id);
     data.users.splice(userIndex, 1);
     saveData();
   },
 
   getCandidates: () => {
-    return [...data.candidates].sort((a,b) => b.voteCount - a.voteCount);
+    return [...data.candidates].sort((a,b) => a.name.localeCompare(b.name));
   },
 
   addCandidate: (candidateData: Omit<Candidate, 'id' | 'voteCount'>) => {
@@ -126,6 +128,17 @@ export const db = {
     data.candidates.push(newCandidate);
     saveData();
     return db.getCandidates();
+  },
+
+  deleteCandidate: (id: number) => {
+    const candidateIndex = data.candidates.findIndex(c => c.id === id);
+    if(candidateIndex === -1) {
+        throw new Error('Candidate not found.');
+    }
+     // Also remove any votes for this candidate
+    data.votes = data.votes.filter(v => v.candidateId !== id);
+    data.candidates.splice(candidateIndex, 1);
+    saveData();
   },
   
   getElectionStatus: () => {
