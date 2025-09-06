@@ -7,9 +7,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { addVoter, deleteVoter, parseVotersCsv, addBulkVoters } from '@/lib/actions';
+import { addVoter, deleteVoter } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Trash2, Upload, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Loader2 } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import {
   AlertDialog,
@@ -71,9 +71,7 @@ function DeleteVoterButton({ voterId, onVoterDeleted }: { voterId: string, onVot
 
 export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }: VoterManagementProps) {
   const [isAdding, startAdding] = useTransition();
-  const [isUploading, startUploading] = useTransition();
   const singleVoterFormRef = useRef<HTMLFormElement>(null);
-  const csvFormRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
   const handleAddVoter = async (formData: FormData) => {
@@ -89,41 +87,12 @@ export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }
     });
   }
   
-  const handleCsvUpload = async (formData: FormData) => {
-    const file = formData.get('voterCsv') as File;
-    if (!file || file.size === 0) {
-        toast({ title: 'Error', description: 'Please select a CSV file to upload.', variant: 'destructive' });
-        return;
-    }
-
-    startUploading(async () => {
-        const parseResult = await parseVotersCsv(formData);
-        
-        if (!parseResult.success || !parseResult.voters || !parseResult.voters.voters) {
-            toast({ title: 'Parsing Error', description: parseResult.message || 'Could not parse voters from file.', variant: 'destructive' });
-            return;
-        }
-        
-        const addResult = await addBulkVoters(parseResult.voters.voters.map(v => v.name));
-        if (addResult.success && addResult.voters) {
-            toast({ title: 'Success', description: `${addResult.addedCount} voters added successfully.` });
-            if(addResult.skippedCount > 0) {
-                toast({ title: 'Notice', description: `${addResult.skippedCount} voters were skipped because they already exist.` });
-            }
-            csvFormRef.current?.reset();
-            onVoterAdded(addResult.voters);
-        } else {
-            toast({ title: 'Error', description: addResult.message, variant: 'destructive' });
-        }
-    });
-  }
-
   return (
-    <div className="grid gap-4 md:gap-8 lg:grid-cols-5 mt-4">
-      <div className="lg:col-span-2 space-y-4">
+    <div className="grid gap-4 md:gap-8 lg:grid-cols-3 mt-4">
+      <div className="lg:col-span-1">
         <Card>
           <CardHeader>
-            <CardTitle>Add Single Voter</CardTitle>
+            <CardTitle>Add Voter</CardTitle>
             <CardDescription>
               A unique 8-character voting code will be automatically generated.
             </CardDescription>
@@ -141,28 +110,8 @@ export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }
             </form>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Bulk Add Voters via CSV</CardTitle>
-            <CardDescription>
-              Upload a CSV with a single `name` column. A unique code will be generated for each voter.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-             <form ref={csvFormRef} action={handleCsvUpload} className="space-y-4">
-                <div className="space-y-2">
-                    <Label htmlFor="voterCsv">CSV File</Label>
-                    <Input id="voterCsv" name="voterCsv" type="file" accept=".csv" required disabled={isUploading}/>
-                </div>
-                 <Button type="submit" disabled={isUploading} className="w-full sm:w-auto">
-                    {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
-                    {isUploading ? 'Uploading & Processing...' : 'Upload CSV'}
-                 </Button>
-            </form>
-          </CardContent>
-        </Card>
       </div>
-      <div className="lg:col-span-3">
+      <div className="lg:col-span-2">
         <Card>
           <CardHeader>
             <CardTitle>Voter List</CardTitle>
