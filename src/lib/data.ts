@@ -14,32 +14,32 @@ interface AppData {
   electionEnd: string | null;
 }
 
-let data: AppData;
-
-function loadData(): void {
+function getData(): AppData {
   try {
     if (fs.existsSync(dataPath)) {
       const fileContent = fs.readFileSync(dataPath, 'utf-8');
       if (fileContent.trim()) {
-        data = JSON.parse(fileContent);
-        return;
+        return JSON.parse(fileContent);
       }
     }
   } catch (error) {
     console.error('Error loading or parsing data, initializing with empty state:', error);
   }
   
-  data = {
+  // Return a default structure if file doesn't exist or is empty
+  const defaultData: AppData = {
     users: [],
     candidates: [],
     votes: [],
     electionStart: null,
     electionEnd: null,
   };
-  saveData();
+  saveData(defaultData);
+  return defaultData;
 }
 
-function saveData(): void {
+
+function saveData(data: AppData): void {
   try {
     fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), 'utf-8');
   } catch (error) {
@@ -47,10 +47,8 @@ function saveData(): void {
   }
 }
 
-loadData();
 
-
-function generateUniqueCode() {
+function generateUniqueCode(data: AppData) {
   let code: string;
   let isUnique = false;
   while(!isUnique) {
@@ -62,7 +60,7 @@ function generateUniqueCode() {
   return code!;
 }
 
-function generateUniqueId(type: 'user' | 'candidate') {
+function generateUniqueId(type: 'user' | 'candidate', data: AppData) {
     let id: string;
     let isUnique = false;
 
@@ -83,31 +81,38 @@ function generateUniqueId(type: 'user' | 'candidate') {
 
 export const db = {
   getUserByNameAndCode: (name: string, code: string) => {
+    const data = getData();
     return data.users.find((user) => user.name.toLowerCase() === name.toLowerCase() && user.code === code.toUpperCase());
   },
 
   getUserById: (id: string) => {
+    const data = getData();
     return data.users.find((user) => user.id === id);
   },
   
-  getUsers: () => [...data.users].sort((a,b) => a.name.localeCompare(b.name)),
+  getUsers: () => {
+    const data = getData();
+    return [...data.users].sort((a,b) => a.name.localeCompare(b.name))
+  },
 
   addVoter: (name: string) => {
+    const data = getData();
     if (data.users.find(u => u.name.toLowerCase() === name.toLowerCase())) {
         throw new Error('A voter with this name already exists.');
     }
     const newUser: User = {
-        id: generateUniqueId('user'),
+        id: generateUniqueId('user', data),
         name,
-        code: generateUniqueCode(),
+        code: generateUniqueCode(data),
         hasVoted: false,
     }
     data.users.push(newUser);
-    saveData();
+    saveData(data);
     return db.getUsers();
   },
 
   deleteVoter: (id: string) => {
+    const data = getData();
     const userIndex = data.users.findIndex(u => u.id === id);
     if(userIndex === -1) {
         throw new Error('Voter not found.');
@@ -115,22 +120,35 @@ export const db = {
     // Also remove any votes by this user
     data.votes = data.votes.filter(v => v.voterId !== id);
     data.users.splice(userIndex, 1);
-    saveData();
+    saveData(data);
   },
 
   getCandidates: () => {
-    return [...data.candidates].sort((a,b) => a.name.localeCompare(b.name));
+    const data = getData();
+    const voteCounts: {[key: number]: number} = {};
+    data.votes.forEach(vote => {
+      voteCounts[vote.candidateId] = (voteCounts[vote.candidateId] || 0) + 1;
+    });
+
+    const candidatesWithCounts = data.candidates.map(c => ({
+      ...c,
+      voteCount: voteCounts[c.id] || 0,
+    }));
+    
+    return candidatesWithCounts.sort((a,b) => a.name.localeCompare(b.name));
   },
 
   addCandidate: (candidateData: Omit<Candidate, 'id' | 'voteCount'>) => {
-    const newId = parseInt(generateUniqueId('candidate'));
+    const data = getData();
+    const newId = parseInt(generateUniqueId('candidate', data));
     const newCandidate: Candidate = { ...candidateData, id: newId, voteCount: 0 };
     data.candidates.push(newCandidate);
-    saveData();
+    saveData(data);
     return db.getCandidates();
   },
 
   deleteCandidate: (id: number) => {
+    const data = getData();
     const candidateIndex = data.candidates.findIndex(c => c.id === id);
     if(candidateIndex === -1) {
         throw new Error('Candidate not found.');
@@ -138,10 +156,11 @@ export const db = {
      // Also remove any votes for this candidate
     data.votes = data.votes.filter(v => v.candidateId !== id);
     data.candidates.splice(candidateIndex, 1);
-    saveData();
+    saveData(data);
   },
   
   getElectionStatus: () => {
+    const data = getData();
     const now = new Date();
     const start = data.electionStart ? new Date(data.electionStart) : null;
     const end = data.electionEnd ? new Date(data.electionEnd) : null;
@@ -166,9 +185,10 @@ export const db = {
   },
 
   setElectionDates: (start: Date | null, end: Date | null) => {
+    const data = getData();
     data.electionStart = start ? start.toISOString() : null;
     data.electionEnd = end ? end.toISOString() : null;
-    saveData();
+    saveData(data);
     return {
       start: data.electionStart ? new Date(data.electionStart) : null,
       end: data.electionEnd ? new Date(data.electionEnd) : null,
@@ -176,12 +196,13 @@ export const db = {
   },
 
   castVote: (voterId: string, candidateId: number) => {
+    let data = getData();
     const electionStatus = db.getElectionStatus();
     if(electionStatus.status !== 'active') {
         return { success: false, message: 'The election is not currently active.' };
     }
     
-    const user = db.getUserById(voterId);
+    const user = data.users.find((user) => user.id === voterId);
     if (!user) {
       return { success: false, message: 'Invalid user.' };
     }
@@ -195,7 +216,7 @@ export const db = {
     }
 
     user.hasVoted = true;
-    candidate.voteCount += 1;
+    
     const newVote: Vote = {
         id: data.votes.length > 0 ? Math.max(...data.votes.map(v => v.id), 0) + 1 : 1,
         voterId,
@@ -203,28 +224,26 @@ export const db = {
         timestamp: new Date(),
     }
     data.votes.push(newVote);
-    saveData();
+    saveData(data);
     return { success: true, message: 'Your vote has been successfully cast!' };
   },
-
-  getVoteCounts: () => {
-    return data.candidates.map(c => ({
-      id: c.id,
-      name: c.name,
-      voteCount: c.voteCount,
-    }));
-  },
   
-  getTotalVotes: () => data.votes.length,
+  getTotalVotes: () => {
+    const data = getData();
+    return data.votes.length
+  },
 
-  getTotalVoters: () => data.users.length,
+  getTotalVoters: () => {
+    const data = getData();
+    return data.users.length
+  },
 
   resetVotes: () => {
-    data.candidates.forEach(c => c.voteCount = 0);
+    const data = getData();
     data.users.forEach(u => u.hasVoted = false);
     data.votes = [];
     data.electionStart = null;
     data.electionEnd = null;
-    saveData();
+    saveData(data);
   },
 };
