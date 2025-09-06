@@ -1,5 +1,24 @@
 {
-  "users": [],
+  "users": [
+    {
+      "id": "a2a3793f26e018055e94fa36e9211f2b",
+      "name": "Harsh Koli",
+      "code": "F9A715F2",
+      "hasVoted": true
+    },
+    {
+      "id": "50ab74317499f5053277e5528cd0e835",
+      "name": "Kartik Upadhyay",
+      "code": "07ECEE6F",
+      "hasVoted": false
+    },
+    {
+      "id": "a4bc833bcf67fc24194651cc295aeba1",
+      "name": "Piyush",
+      "code": "CF64EA02",
+      "hasVoted": false
+    }
+  ],
   "candidates": [
     {
       "name": "Sarthak Thakur",
@@ -18,7 +37,14 @@
       "voteCount": 0
     }
   ],
-  "votes": [],
+  "votes": [
+    {
+      "id": 1,
+      "voterId": "a2a3793f26e018055e94fa36e9211f2b",
+      "candidateId": 2,
+      "timestamp": "2025-09-06T15:18:31.522Z"
+    }
+  ],
   "electionStart": "2025-09-06T15:14:00.000Z",
   "electionEnd": "2025-09-06T17:30:00.000Z"
 }
