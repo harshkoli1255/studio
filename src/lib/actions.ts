@@ -7,7 +7,8 @@ import { db } from './data';
 import type { Candidate } from './types';
 import { summarizeVoteResults } from '@/ai/flows/summarize-vote-results';
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'hadmin123';
 const ADMIN_COOKIE = 'admin-auth';
 const STUDENT_COOKIE = 'student-auth';
 
@@ -47,18 +48,22 @@ export async function studentLogin(prevState: any, formData: FormData) {
 }
 
 const adminLoginSchema = z.object({
+  username: z.string().min(1, { message: 'Username is required.' }),
   password: z.string().min(1, { message: 'Password is required.' }),
 });
 
 export async function adminLogin(prevState: any, formData: FormData) {
-  const parsed = adminLoginSchema.safeParse({ password: formData.get('password') });
+  const parsed = adminLoginSchema.safeParse({
+    username: formData.get('username'),
+    password: formData.get('password'),
+  });
 
   if (!parsed.success) {
     return { message: parsed.error.errors[0].message };
   }
   
-  if (parsed.data.password !== ADMIN_PASSWORD) {
-    return { message: 'Incorrect password.' };
+  if (parsed.data.username !== ADMIN_USERNAME || parsed.data.password !== ADMIN_PASSWORD) {
+    return { message: 'Incorrect username or password.' };
   }
 
   cookies().set(ADMIN_COOKIE, 'true', {
