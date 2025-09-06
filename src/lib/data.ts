@@ -267,9 +267,9 @@ export const db = {
   endElection: () => {
     const currentData = loadDataFromFile();
     const now = new Date();
-    const { start } = currentData;
-    const electionStart = (start && new Date(start) < now) ? start : new Date(now.getTime() - 1000).toISOString();
-    currentData.electionStart = electionStart;
+    const { electionStart } = currentData;
+    const start = (electionStart && new Date(electionStart) < now) ? electionStart : new Date(now.getTime() - 1000).toISOString();
+    currentData.electionStart = start;
     currentData.electionEnd = now.toISOString();
 
     const candidates = db.getCandidates();
@@ -280,7 +280,7 @@ export const db = {
         const winners = candidates.filter(c => c.voteCount === maxVotes);
         
         const newWinnerRecord: PastWinner = {
-            date: now,
+            date: now.toISOString() as any, // Store as string
             winners: winners.map(({id, name, voteCount}) => ({id, name, voteCount})),
             totalVotes,
         }
