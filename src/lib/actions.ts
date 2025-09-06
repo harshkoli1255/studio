@@ -63,25 +63,30 @@ const csvFileSchema = z.instanceof(File)
 
 // --- Server Actions ---
 
-export async function studentLogin(prevState: any, formData: FormData) {
+export async function studentLogin(prevState: any, formData: FormData): Promise<{ success: boolean; message: string; }> {
   const electionStatus = db.getElectionStatus();
+  
   if (electionStatus.status === 'ended') {
-    redirect('/results');
+    return { success: true, message: 'The election has ended. Redirecting to results...' };
   }
   if (electionStatus.status !== 'active') {
-    return { message: `The election is ${electionStatus.status.replace('_', ' ')}.` };
+    return { success: false, message: `The election is ${electionStatus.status.replace('_', ' ')}.` };
   }
   
   const parsed = loginSchema.safeParse(Object.fromEntries(formData));
 
   if (!parsed.success) {
-    return { message: parsed.error.errors[0].message };
+    return { success: false, message: parsed.error.errors[0].message };
   }
 
   const user = db.getUserByNameAndCode(parsed.data.name, parsed.data.code);
 
   if (!user) {
-    return { message: 'Invalid name or voting code.' };
+    return { success: false, message: 'Invalid name or voting code.' };
+  }
+  
+  if (user.hasVoted) {
+      return { success: true, message: 'You have already voted. Redirecting...' };
   }
 
   cookies().set(STUDENT_COOKIE, user.id, {
@@ -91,7 +96,7 @@ export async function studentLogin(prevState: any, formData: FormData) {
     path: '/',
   });
 
-  redirect('/vote');
+  return { success: true, message: 'Login successful. Redirecting to vote...' };
 }
 
 export async function adminLogin(prevState: any, formData: FormData) {

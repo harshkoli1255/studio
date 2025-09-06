@@ -1,7 +1,8 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
+import { useRouter } from 'next/navigation';
 import { studentLogin } from '@/lib/actions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -20,7 +21,14 @@ function SubmitButton() {
 }
 
 export default function StudentLoginForm() {
-  const [state, formAction] = useActionState(studentLogin, { message: '' });
+  const [state, formAction] = useActionState(studentLogin, { success: false, message: '' });
+  const router = useRouter();
+
+  useEffect(() => {
+    if (state.success) {
+      router.push('/vote');
+    }
+  }, [state, router]);
 
   return (
     <form action={formAction}>
@@ -31,7 +39,7 @@ export default function StudentLoginForm() {
         </CardHeader>
         <CardContent className="space-y-4">
           {state.message && (
-            <Alert variant={state.message.includes('not currently active') ? 'default' : 'destructive'}>
+             <Alert variant={state.success ? 'default' : 'destructive'}>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{state.message}</AlertDescription>
             </Alert>
