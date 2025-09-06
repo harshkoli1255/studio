@@ -34,9 +34,13 @@ interface CandidateFormProps {
 
 export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) {
   const [state, formAction] = useActionState(addCandidate, { success: false, message: '' });
-  const [randomImage, setRandomImage] = useState('https://picsum.photos/400/400?random=4');
+  const [randomImage, setRandomImage] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
+  
+  useEffect(() => {
+    generateRandomImage();
+  }, []);
 
   useEffect(() => {
     if (state.success) {
@@ -83,7 +87,7 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
               <div className="space-y-2">
                 <Label htmlFor="imageUrl">Image URL</Label>
                  <div className="flex gap-2">
-                    <Input id="imageUrl" name="imageUrl" defaultValue={randomImage} key={randomImage} placeholder="https://example.com/image.png" required />
+                    <Input id="imageUrl" name="imageUrl" value={randomImage} onChange={(e) => setRandomImage(e.target.value)} placeholder="https://example.com/image.png" required />
                     <Button type="button" variant="outline" onClick={generateRandomImage}>Random</Button>
                 </div>
               </div>
