@@ -30,10 +30,15 @@ export function middleware(request: NextRequest) {
   if (pathname === '/' && isStudentAuth) {
     return NextResponse.redirect(new URL('/vote', request.url));
   }
+  
+  if (pathname === '/results' && !isStudentAuth && !isAdminAuth) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/admin/login', '/vote', '/'],
+  matcher: ['/admin/:path*', '/admin/login', '/vote', '/', '/results'],
 };

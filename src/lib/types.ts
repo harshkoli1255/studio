@@ -21,3 +21,13 @@ export type Vote = {
   candidateId: number;
   timestamp: Date;
 };
+
+export type PastWinner = {
+  date: Date;
+  winners: {
+    id: number;
+    name: string;
+    voteCount: number;
+  }[];
+  totalVotes: number;
+}

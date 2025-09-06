@@ -20,6 +20,9 @@ const loginSchema = z.object({
 
 export async function studentLogin(prevState: any, formData: FormData) {
   const electionStatus = db.getElectionStatus();
+  if (electionStatus.status === 'ended') {
+    redirect('/results');
+  }
   if (electionStatus.status !== 'active') {
     return { message: `The election is ${electionStatus.status.replace('_', ' ')}.` };
   }
@@ -250,11 +253,7 @@ export async function setElectionSchedule(start: Date | null, end: Date | null) 
 
 export async function endElectionNow() {
   try {
-    const now = new Date();
-    const { start } = db.getElectionStatus();
-    // If start is in the future or not set, set it to a moment ago.
-    const electionStart = (start && start < now) ? start : new Date(now.getTime() - 1000);
-    db.setElectionDates(electionStart, now);
+    db.endElection();
     return { success: true, message: "Election has been ended." };
   } catch (e: any) {
     return { success: false, message: "Could not end the election." };

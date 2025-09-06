@@ -1,5 +1,5 @@
 // In-memory data store with file persistence
-import type { Candidate, User, Vote } from '@/lib/types';
+import type { Candidate, User, Vote, PastWinner } from '@/lib/types';
 import { randomBytes } from 'crypto';
 import fs from 'fs';
 import path from 'path';
@@ -10,41 +10,44 @@ interface AppData {
   users: User[];
   candidates: Candidate[];
   votes: Vote[];
+  pastWinners: PastWinner[];
   electionStart: string | null;
   electionEnd: string | null;
 }
 
 let data: AppData | null = null;
 
-function getData(): AppData {
-  if (data) {
-    return data;
-  }
+function loadDataFromFile(): AppData {
   try {
     if (fs.existsSync(dataPath)) {
       const fileContent = fs.readFileSync(dataPath, 'utf-8');
       if (fileContent.trim()) {
-        data = JSON.parse(fileContent);
-        return data as AppData;
+        return JSON.parse(fileContent);
       }
     }
   } catch (error) {
     console.error('Error loading or parsing data, initializing with empty state:', error);
   }
-  
+
   // Return a default structure if file doesn't exist or is empty
   const defaultData: AppData = {
     users: [],
     candidates: [],
     votes: [],
+    pastWinners: [],
     electionStart: null,
     electionEnd: null,
   };
-  saveData(defaultData);
-  data = defaultData;
-  return data;
+  fs.writeFileSync(dataPath, JSON.stringify(defaultData, null, 2), 'utf-8');
+  return defaultData;
 }
 
+function getData(): AppData {
+  if (data === null) {
+    data = loadDataFromFile();
+  }
+  return data;
+}
 
 function saveData(dataToSave: AppData): void {
   data = dataToSave;
@@ -145,6 +148,11 @@ export const db = {
     
     return candidatesWithCounts.sort((a,b) => a.name.localeCompare(b.name));
   },
+  
+  getPastWinners: () => {
+    const currentData = getData();
+    return currentData.pastWinners.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  },
 
   addCandidate: (candidateData: Omit<Candidate, 'id' | 'voteCount'>) => {
     const currentData = getData();
@@ -244,6 +252,32 @@ export const db = {
   getTotalVoters: () => {
     const currentData = getData();
     return currentData.users.length
+  },
+  
+  endElection: () => {
+    const currentData = getData();
+    const now = new Date();
+    const { start } = currentData;
+    const electionStart = (start && new Date(start) < now) ? start : new Date(now.getTime() - 1000).toISOString();
+    currentData.electionStart = electionStart;
+    currentData.electionEnd = now.toISOString();
+
+    const candidates = db.getCandidates();
+    const totalVotes = db.getTotalVotes();
+    
+    if (candidates.length > 0 && totalVotes > 0) {
+        const maxVotes = Math.max(...candidates.map(c => c.voteCount));
+        const winners = candidates.filter(c => c.voteCount === maxVotes);
+        
+        const newWinnerRecord: PastWinner = {
+            date: now,
+            winners: winners.map(({id, name, voteCount}) => ({id, name, voteCount})),
+            totalVotes,
+        }
+        currentData.pastWinners.push(newWinnerRecord);
+    }
+    
+    saveData(currentData);
   },
 
   resetVotes: () => {

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BarChart, Users, Percent, Vote, LogOut, UserCheck, Home, Settings, Package2, PanelLeft, Search, Users2 } from 'lucide-react';
-import type { Candidate, User } from '@/lib/types';
+import { BarChart, Users, Percent, Vote, LogOut, UserCheck, Home, Settings, Package2, PanelLeft, Search, Users2, Trophy } from 'lucide-react';
+import type { Candidate, User, PastWinner } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import CandidatesTable from './CandidatesTable';
@@ -29,12 +29,14 @@ import Link from 'next/link';
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '../ui/breadcrumb';
 import { Input } from '../ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '../ui/dropdown-menu';
+import PastWinnersList from './PastWinnersList';
 
 
 interface AdminDashboardProps {
   initialCandidates: Candidate[];
   initialTotalVotes: number;
   initialVoters: User[];
+  initialPastWinners: PastWinner[];
   initialElectionStatus: {
     status: 'upcoming' | 'active' | 'ended' | 'not_set';
     start: Date | null;
@@ -46,7 +48,8 @@ export default function AdminDashboard({
   initialCandidates,
   initialTotalVotes,
   initialVoters,
-  initialElectionStatus
+  initialElectionStatus,
+  initialPastWinners
 }: AdminDashboardProps) {
   const [candidates, setCandidates] = useState<Candidate[]>(initialCandidates);
   const [totalVotes, setTotalVotes] = useState(initialTotalVotes);
@@ -105,6 +108,10 @@ export default function AdminDashboard({
               <Users2 className="h-5 w-5" />
               <span className="sr-only">Voters</span>
           </Link>
+            <Link href="/results" className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8" target="_blank">
+              <Trophy className="h-5 w-5" />
+              <span className="sr-only">Results</span>
+          </Link>
           <Link href="#" className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
               <Settings className="h-5 w-5" />
               <span className="sr-only">Settings</span>
@@ -142,6 +149,14 @@ export default function AdminDashboard({
                 >
                   <Users2 className="h-5 w-5" />
                   Voters
+                </Link>
+                 <Link
+                  href="/results"
+                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                   target="_blank"
+                >
+                  <Trophy className="h-5 w-5" />
+                  Results
                 </Link>
                  <Link
                   href="#"
@@ -246,9 +261,10 @@ export default function AdminDashboard({
                  </div>
                  <Summary />
                   <Tabs defaultValue="results">
-                    <TabsList className="grid w-full grid-cols-3">
+                    <TabsList className="grid w-full grid-cols-4">
                         <TabsTrigger value="results">Results & Candidates</TabsTrigger>
                         <TabsTrigger value="voters">Voter Management</TabsTrigger>
+                        <TabsTrigger value="history">Past Winners</TabsTrigger>
                         <TabsTrigger value="settings">Election Settings</TabsTrigger>
                     </TabsList>
                     <TabsContent value="results">
@@ -284,6 +300,9 @@ export default function AdminDashboard({
                             onVoterAdded={onVoterAdded}
                             onVoterDeleted={onVoterDeleted}
                         />
+                    </TabsContent>
+                    <TabsContent value="history">
+                       <PastWinnersList pastWinners={initialPastWinners} />
                     </TabsContent>
                     <TabsContent value="settings">
                         <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">

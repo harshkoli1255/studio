@@ -19,38 +19,38 @@ export default function ElectionResults({ candidates, totalVotes }: ElectionResu
   };
   
   const winners = getWinners();
-  const winnerText = winners.length > 1 ? 'It\'s a tie!' : winners.length === 1 ? `Congratulations to ${winners[0].name}!` : 'The election has ended.';
+  const winnerText = winners.length > 1 ? 'It\'s a tie!' : winners.length === 1 ? `Congratulations to ${winners[0].name}!` : 'The Election Has Ended';
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/40 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
       <main className="container mx-auto max-w-2xl text-center">
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-8">
             <Logo />
         </div>
         
-        <Card className="text-left shadow-2xl">
-           <CardHeader className="text-center pb-0">
+        <Card className="text-left shadow-2xl rounded-2xl overflow-hidden bg-background">
+           <CardHeader className="text-center p-8 bg-background">
              <div className="flex justify-center mb-4 text-amber-500">
-                <Award className="h-16 w-16" strokeWidth={1.5}/>
+                <Award className="h-20 w-20" strokeWidth={1.5}/>
              </div>
-             <CardTitle className="text-3xl font-bold tracking-tight">{winnerText}</CardTitle>
-             <CardDescription className="text-lg">
+             <CardTitle className="text-4xl font-bold tracking-tight">{winnerText}</CardTitle>
+             <CardDescription className="text-lg mt-2 text-muted-foreground">
                 {winners.length > 0 ? 'Here are the final results of the election.' : 'No votes were cast in this election.'}
              </CardDescription>
            </CardHeader>
-           <CardContent className="px-4 sm:px-6 pt-6">
+           <CardContent className="p-8">
              {winners.length > 0 && (
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-6 bg-secondary/50 p-6 rounded-lg my-6">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-8 my-8">
                     {winners.map(winner => (
-                       <div key={winner.id} className="flex flex-col items-center gap-2">
+                       <div key={winner.id} className="flex flex-col items-center gap-3">
                          <Image
                            src={winner.imageUrl}
                            alt={winner.name}
-                           width={100}
-                           height={100}
-                           className="rounded-full border-4 border-amber-400 object-cover"
+                           width={120}
+                           height={120}
+                           className="rounded-full border-4 border-amber-400 object-cover shadow-lg"
                          />
-                         <p className="font-bold text-lg">{winner.name}</p>
+                         <p className="font-bold text-xl">{winner.name}</p>
                        </div>
                     ))}
                 </div>
