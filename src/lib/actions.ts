@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { db } from './data';
-import type { Candidate } from './types';
+import type { Candidate, User } from './types';
 import { summarizeVoteResults } from '@/ai/flows/summarize-vote-results';
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
@@ -158,4 +158,34 @@ export async function generateSummary() {
     console.error('Error generating summary:', error);
     return { summary: 'Could not generate summary at this time.' };
   }
+}
+
+const voterSchema = z.object({
+    voterName: z.string().min(3, 'Voter name must be at least 3 characters long.'),
+});
+
+export async function addVoter(prevState: any, formData: FormData): Promise<{success: boolean, message: string, voter: User | null}> {
+    const parsed = voterSchema.safeParse({
+        voterName: formData.get('voterName'),
+    });
+
+    if (!parsed.success) {
+        return { success: false, message: parsed.error.errors[0].message, voter: null };
+    }
+
+    try {
+        const newUser = db.addVoter(parsed.data.voterName);
+        return { success: true, message: 'Voter added successfully.', voter: newUser };
+    } catch(e: any) {
+        return { success: false, message: e.message, voter: null };
+    }
+}
+
+export async function deleteVoter(voterId: string) {
+    try {
+        db.deleteVoter(voterId);
+        return { success: true, message: 'Voter deleted successfully.' };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
 }

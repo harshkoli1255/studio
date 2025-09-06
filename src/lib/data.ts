@@ -1,5 +1,6 @@
 // In-memory data store
 import type { Candidate, User, Vote } from '@/lib/types';
+import { randomBytes } from 'crypto';
 
 let users: User[] = [];
 
@@ -7,17 +8,55 @@ let candidates: Candidate[] = [];
 
 let votes: Vote[] = [];
 
+function generateUniqueCode() {
+  let code: string;
+  let isUnique = false;
+  while(!isUnique) {
+    code = randomBytes(4).toString('hex').toUpperCase();
+    if(!users.find(u => u.code === code)) {
+      isUnique = true;
+    }
+  }
+  return code!;
+}
+
+function generateUniqueId() {
+    return randomBytes(16).toString('hex');
+}
+
 
 export const db = {
   getUserByNameAndCode: (name: string, code: string) => {
-    return users.find((user) => user.name === name && user.code === code);
+    return users.find((user) => user.name.toLowerCase() === name.toLowerCase() && user.code.toLowerCase() === code.toLowerCase());
   },
 
   getUserById: (id: string) => {
     return users.find((user) => user.id === id);
   },
   
-  getUsers: () => users,
+  getUsers: () => users.sort((a,b) => a.name.localeCompare(b.name)),
+
+  addVoter: (name: string) => {
+    if (users.find(u => u.name.toLowerCase() === name.toLowerCase())) {
+        throw new Error('A voter with this name already exists.');
+    }
+    const newUser: User = {
+        id: generateUniqueId(),
+        name,
+        code: generateUniqueCode(),
+        hasVoted: false,
+    }
+    users.push(newUser);
+    return newUser;
+  },
+
+  deleteVoter: (id: string) => {
+    const userIndex = users.findIndex(u => u.id === id);
+    if(userIndex === -1) {
+        throw new Error('Voter not found.');
+    }
+    users.splice(userIndex, 1);
+  },
 
   getCandidates: () => {
     return candidates.sort((a,b) => a.id - b.id);

@@ -6,13 +6,13 @@ export const dynamic = 'force-dynamic'
 export default async function AdminPage() {
   const candidates = db.getCandidates();
   const totalVotes = db.getTotalVotes();
-  const totalVoters = db.getUsers().length;
+  const voters = db.getUsers();
   
   return (
     <AdminDashboard 
       initialCandidates={candidates}
       initialTotalVotes={totalVotes}
-      initialTotalVoters={totalVoters}
+      initialVoters={voters}
     />
   );
 }

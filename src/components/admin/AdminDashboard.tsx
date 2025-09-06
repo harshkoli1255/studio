@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BarChart, Users, Percent, Vote, Plus, RefreshCcw, LogOut } from 'lucide-react';
-import type { Candidate } from '@/lib/types';
+import { BarChart, Users, Percent, Vote, RefreshCcw, LogOut } from 'lucide-react';
+import type { Candidate, User } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Logo from '@/components/Logo';
@@ -11,30 +11,34 @@ import CandidateForm from './CandidateForm';
 import { resetVotes, logout } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import Summary from './Summary';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import VoterManagement from './VoterManagement';
 
 interface AdminDashboardProps {
   initialCandidates: Candidate[];
   initialTotalVotes: number;
-  initialTotalVoters: number;
+  initialVoters: User[];
 }
 
 export default function AdminDashboard({
   initialCandidates,
   initialTotalVotes,
-  initialTotalVoters,
+  initialVoters,
 }: AdminDashboardProps) {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [totalVotes, setTotalVotes] = useState(0);
+  const [voters, setVoters] = useState<User[]>([]);
   const { toast } = useToast();
-
+  
   useEffect(() => {
     setCandidates(initialCandidates);
     setTotalVotes(initialTotalVotes);
-  }, [initialCandidates, initialTotalVotes]);
+    setVoters(initialVoters);
+  }, [initialCandidates, initialTotalVotes, initialVoters]);
 
-  const turnout = initialTotalVoters > 0 ? (totalVotes / initialTotalVoters) * 100 : 0;
+  const turnout = voters.length > 0 ? (totalVotes / voters.length) * 100 : 0;
   
-  const leadingCandidate = candidates.length > 0 ? [...candidates].sort((a,b) => b.voteCount - a.voteCount)[0].name : 'N/A';
+  const leadingCandidate = candidates.length > 0 ? [...candidates].sort((a,b) => b.voteCount - a.voteCount)[0]?.name || 'N/A' : 'N/A';
 
   const handleReset = async () => {
     if (confirm('Are you sure you want to reset all votes? This action cannot be undone.')) {
@@ -48,6 +52,14 @@ export default function AdminDashboard({
   const onCandidateAdded = (newCandidate: Candidate) => {
     setCandidates(prev => [...prev, newCandidate].sort((a,b) => a.id - b.id));
   };
+  
+  const onVoterAdded = (newVoter: User) => {
+    setVoters(prev => [...prev, newVoter]);
+  }
+
+  const onVoterDeleted = (deletedVoterId: string) => {
+    setVoters(prev => prev.filter(v => v.id !== deletedVoterId));
+  }
 
 
   return (
@@ -83,7 +95,7 @@ export default function AdminDashboard({
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{initialTotalVoters}</div>
+              <div className="text-2xl font-bold">{voters.length}</div>
             </CardContent>
           </Card>
           <Card>
@@ -110,30 +122,46 @@ export default function AdminDashboard({
         
         <Summary />
 
-        <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
-          <Card className="h-fit">
-            <CardHeader>
-              <CardTitle>Live Vote Count</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CandidatesTable candidates={candidates} />
-            </CardContent>
-          </Card>
-          
-          <div className="space-y-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Manage Election</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <CandidateForm onCandidateAdded={onCandidateAdded} />
-                <Button variant="destructive" onClick={handleReset} className="w-full">
-                  <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Votes
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        <Tabs defaultValue="results">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="results">Results & Candidates</TabsTrigger>
+            <TabsTrigger value="voters">Voter Management</TabsTrigger>
+          </TabsList>
+          <TabsContent value="results">
+            <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
+              <Card className="h-fit">
+                <CardHeader>
+                  <CardTitle>Live Vote Count</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CandidatesTable candidates={candidates} />
+                </CardContent>
+              </Card>
+              
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Manage Election</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <CandidateForm onCandidateAdded={onCandidateAdded} />
+                    <Button variant="destructive" onClick={handleReset} className="w-full">
+                      <RefreshCcw className="mr-2 h-4 w-4" /> Reset All Votes
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+          <TabsContent value="voters">
+             <VoterManagement 
+                voters={voters}
+                onVoterAdded={onVoterAdded}
+                onVoterDeleted={onVoterDeleted}
+              />
+          </TabsContent>
+        </Tabs>
+
       </main>
     </div>
   );
