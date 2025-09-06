@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { logout } from '@/lib/actions';
 import { LogOut } from 'lucide-react';
 import Link from 'next/link';
+import ElectionResults from '@/components/student/ElectionResults';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +30,10 @@ export default async function VotePage() {
     );
   }
 
+  if (electionStatus.status === 'ended') {
+    return <ElectionResults candidates={candidates} totalVotes={totalVotes} />;
+  }
+
   if (electionStatus.status !== 'active' && !user.hasVoted) {
      return (
        <div className="flex min-h-screen items-center justify-center flex-col gap-4 p-4 text-center">
@@ -36,7 +41,6 @@ export default async function VotePage() {
          <h1 className="text-2xl font-bold mt-4">The election is not currently active.</h1>
          <p className="text-muted-foreground">
             {electionStatus.status === 'upcoming' && `It is scheduled to start on ${electionStatus.start?.toLocaleString()}.`}
-            {electionStatus.status === 'ended' && `It ended on ${electionStatus.end?.toLocaleString()}.`}
             {electionStatus.status === 'not_set' && 'The election dates have not been set by the administrator yet.'}
          </p>
          <p className="text-sm text-muted-foreground">Please check back later.</p>
