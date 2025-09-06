@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect, useRef, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { addCandidate } from '@/lib/actions';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Plus, Upload, Image as ImageIcon } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import type { Candidate } from '@/lib/types';
 import Image from 'next/image';
@@ -30,31 +29,31 @@ function SubmitButton() {
 }
 
 interface CandidateFormProps {
-    onCandidateAdded: (candidate: Candidate) => void;
+    onCandidateAdded: (candidates: Candidate[]) => void;
 }
 
 export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) {
-  const [state, formAction] = useActionState(addCandidate, { success: false, message: '' });
+  const [state, formAction] = useActionState(addCandidate, { success: false, message: '', candidates: null, actionId: '' });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [lastActionId, setLastActionId] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (state.success) {
-      toast({ title: 'Success', description: state.message });
-      formRef.current?.reset();
-      setImagePreview(null);
-      
-      const newCandidate = state.candidate
-      if(newCandidate) {
-        onCandidateAdded(newCandidate as Candidate);
+    if (state.actionId && state.actionId !== lastActionId) {
+      if (state.success && state.candidates) {
+        toast({ title: 'Success', description: state.message });
+        formRef.current?.reset();
+        setImagePreview(null);
+        onCandidateAdded(state.candidates);
+        setLastActionId(state.actionId);
+      } else if (state.message) {
+        toast({ title: 'Error', description: state.message, variant: 'destructive' });
+        setLastActionId(state.actionId);
       }
-
-    } else if (state.message) {
-      toast({ title: 'Error', description: state.message, variant: 'destructive' });
     }
-  }, [state, toast, onCandidateAdded]);
+  }, [state, toast, onCandidateAdded, lastActionId]);
   
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

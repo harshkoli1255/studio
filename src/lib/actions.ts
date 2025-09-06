@@ -125,8 +125,9 @@ async function fileToDataUrl(file: File): Promise<string> {
     return `data:${file.type};base64,${buffer.toString('base64')}`;
 }
 
-export async function addCandidate(prevState: any, formData: FormData): Promise<{ success: boolean; message: string; candidate?: Candidate; }> {
+export async function addCandidate(prevState: any, formData: FormData): Promise<{ success: boolean; message: string; candidates: Candidate[] | null; actionId: string; }> {
     const imageFile = formData.get('image');
+    const actionId = randomBytes(8).toString('hex');
     const parsed = candidateSchema.safeParse({
         name: formData.get('name'),
         bio: formData.get('bio'),
@@ -136,7 +137,7 @@ export async function addCandidate(prevState: any, formData: FormData): Promise<
     });
 
     if (!parsed.success) {
-        return { success: false, message: parsed.error.errors.map(e => e.message).join(', ') };
+        return { success: false, message: parsed.error.errors.map(e => e.message).join(', '), candidates: null, actionId };
     }
     
     let finalImageUrl = parsed.data.imageUrl;
@@ -144,23 +145,24 @@ export async function addCandidate(prevState: any, formData: FormData): Promise<
     if (imageFile instanceof File && imageFile.size > 0) {
         const fileValidation = imageFileSchema.safeParse(imageFile);
          if (!fileValidation.success) {
-             return { success: false, message: fileValidation.error.errors.map(e => e.message).join(', ') };
+             return { success: false, message: fileValidation.error.errors.map(e => e.message).join(', '), candidates: null, actionId };
          }
         finalImageUrl = await fileToDataUrl(imageFile);
     }
     
     if (!finalImageUrl) {
-        return { success: false, message: "An image is required." };
+        return { success: false, message: "An image is required.", candidates: null, actionId };
     }
 
-    const newCandidate = db.addCandidate({
+    db.addCandidate({
         name: parsed.data.name,
         bio: parsed.data.bio,
         imageUrl: finalImageUrl,
         dataAiHint: parsed.data.dataAiHint,
     });
     
-    return { success: true, message: 'Candidate added successfully.', candidate: newCandidate };
+    const updatedCandidates = db.getCandidates();
+    return { success: true, message: 'Candidate added successfully.', candidates: updatedCandidates, actionId };
 }
 
 export async function resetVotes() {
