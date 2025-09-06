@@ -71,14 +71,14 @@ function DeleteVoterButton({ voterId, onVoterDeleted }: { voterId: string, onVot
 
 
 export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }: VoterManagementProps) {
-  const [isAdding, setIsAdding] = useTransition();
-  const [isUploading, setIsUploading] = useTransition();
+  const [isAdding, startAdding] = useTransition();
+  const [isUploading, startUploading] = useTransition();
   const singleVoterFormRef = useRef<HTMLFormElement>(null);
   const csvFormRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
   const handleAddVoter = async (formData: FormData) => {
-    setIsAdding(async () => {
+    startAdding(async () => {
         const result = await addVoter(formData);
         if(result.success && result.voters) {
             toast({ title: 'Success', description: result.message });
@@ -97,14 +97,15 @@ export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }
         return;
     }
 
-    setIsUploading(async () => {
+    startUploading(async () => {
         const parseResult = await parseVotersCsv(formData);
-        if (!parseResult.success || !parseResult.voters) {
-            toast({ title: 'Parsing Error', description: parseResult.message, variant: 'destructive' });
+        
+        if (!parseResult.success || !parseResult.voters || !parseResult.voters.voters) {
+            toast({ title: 'Parsing Error', description: parseResult.message || 'Could not parse voters from file.', variant: 'destructive' });
             return;
         }
         
-        const addResult = await addBulkVoters(parseResult.voters);
+        const addResult = await addBulkVoters(parseResult.voters.voters);
         if (addResult.success && addResult.voters) {
             toast({ title: 'Success', description: `${addResult.addedCount} voters added successfully.` });
             if(addResult.skippedCount > 0) {

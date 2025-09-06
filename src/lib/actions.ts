@@ -176,7 +176,7 @@ export async function deleteCandidate(candidateId: number) {
   }
 }
 
-export async function addVoter(prevState: any, formData: FormData) {
+export async function addVoter(formData: FormData) {
   const parsed = voterSchema.safeParse(Object.fromEntries(formData));
 
   if (!parsed.success) {
@@ -191,9 +191,9 @@ export async function addVoter(prevState: any, formData: FormData) {
   }
 }
 
-export async function addBulkVoters(votersData: { voters: { name: string, code: string }[] }) {
+export async function addBulkVoters(votersToAdd: {name: string, code: string}[]) {
     try {
-        const {voters: updatedVoters, addedCount, skippedCount} = db.addVoters(votersData.voters);
+        const {voters: updatedVoters, addedCount, skippedCount} = db.addVoters(votersToAdd);
         return { success: true, message: `${addedCount} voters added.`, voters: updatedVoters, addedCount, skippedCount };
     } catch(e: any) {
         return { success: false, message: "An error occurred while adding voters.", voters: null, addedCount: 0, skippedCount: 0 };
