@@ -106,19 +106,31 @@ export async function castVote(candidateId: number) {
   return { success: false, message: 'An error occurred while casting your vote.' };
 }
 
+const imageFileSchema = z.instanceof(File).refine(file => file.size > 0, 'Image is required.').refine(file => file.size < 4 * 1024 * 1024, 'Image must be less than 4MB.').refine(file => file.type.startsWith('image/'), 'File must be an image.');
+
 const candidateSchema = z.object({
     name: z.string().min(3, 'Name must be at least 3 characters long.'),
     bio: z.string().min(10, 'Bio must be at least 10 characters long.'),
-    imageUrl: z.string().url('Please enter a valid image URL.'),
+    imageUrl: z.string().url('Please enter a valid image URL.').optional().or(z.literal('')),
+    image: z.any().optional(),
     dataAiHint: z.string().optional(),
+}).refine(data => data.imageUrl || (data.image && data.image.size > 0), {
+    message: "Please provide an image URL or upload an image file.",
+    path: ["image"],
 });
 
+async function fileToDataUrl(file: File): Promise<string> {
+    const buffer = Buffer.from(await file.arrayBuffer());
+    return `data:${file.type};base64,${buffer.toString('base64')}`;
+}
 
-export async function addCandidate(prevState: any, formData: FormData) {
+export async function addCandidate(prevState: any, formData: FormData): Promise<{ success: boolean; message: string; candidate?: Candidate; }> {
+    const imageFile = formData.get('image');
     const parsed = candidateSchema.safeParse({
         name: formData.get('name'),
         bio: formData.get('bio'),
         imageUrl: formData.get('imageUrl'),
+        image: imageFile,
         dataAiHint: formData.get('dataAiHint'),
     });
 
@@ -126,8 +138,28 @@ export async function addCandidate(prevState: any, formData: FormData) {
         return { success: false, message: parsed.error.errors.map(e => e.message).join(', ') };
     }
     
-    db.addCandidate(parsed.data as Omit<Candidate, 'id' | 'voteCount'>);
-    return { success: true, message: 'Candidate added successfully.' };
+    let finalImageUrl = parsed.data.imageUrl;
+
+    if (imageFile instanceof File && imageFile.size > 0) {
+        const fileValidation = imageFileSchema.safeParse(imageFile);
+         if (!fileValidation.success) {
+             return { success: false, message: fileValidation.error.errors.map(e => e.message).join(', ') };
+         }
+        finalImageUrl = await fileToDataUrl(imageFile);
+    }
+    
+    if (!finalImageUrl) {
+        return { success: false, message: "An image is required." };
+    }
+
+    const newCandidate = db.addCandidate({
+        name: parsed.data.name,
+        bio: parsed.data.bio,
+        imageUrl: finalImageUrl,
+        dataAiHint: parsed.data.dataAiHint,
+    });
+    
+    return { success: true, message: 'Candidate added successfully.', candidate: newCandidate };
 }
 
 export async function resetVotes() {
