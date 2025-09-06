@@ -30,7 +30,7 @@ export default async function VotePage() {
     );
   }
 
-  if (electionStatus.status === 'ended') {
+  if (electionStatus.status === 'ended' || (user.hasVoted && electionStatus.status !== 'active')) {
     return <ElectionResults candidates={candidates} totalVotes={totalVotes} />;
   }
 

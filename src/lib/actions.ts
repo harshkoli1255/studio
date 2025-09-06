@@ -63,15 +63,8 @@ const csvFileSchema = z.instanceof(File)
 
 // --- Server Actions ---
 
-export async function studentLogin(prevState: any, formData: FormData): Promise<{ success: boolean; message: string; }> {
+export async function studentLogin(prevState: any, formData: FormData): Promise<{ success: boolean; message: string; redirectTo?: string; }> {
   const electionStatus = db.getElectionStatus();
-  
-  if (electionStatus.status === 'ended') {
-    return { success: true, message: 'The election has ended. Redirecting to results...' };
-  }
-  if (electionStatus.status !== 'active') {
-    return { success: false, message: `The election is ${electionStatus.status.replace('_', ' ')}.` };
-  }
   
   const parsed = loginSchema.safeParse(Object.fromEntries(formData));
 
@@ -84,10 +77,6 @@ export async function studentLogin(prevState: any, formData: FormData): Promise<
   if (!user) {
     return { success: false, message: 'Invalid name or voting code.' };
   }
-  
-  if (user.hasVoted) {
-      return { success: true, message: 'You have already voted. Redirecting...' };
-  }
 
   cookies().set(STUDENT_COOKIE, user.id, {
     httpOnly: true,
@@ -95,8 +84,20 @@ export async function studentLogin(prevState: any, formData: FormData): Promise<
     maxAge: 60 * 60 * 24, // 1 day
     path: '/',
   });
+  
+  if (electionStatus.status === 'ended') {
+    return { success: true, message: 'The election has ended. Redirecting to results...', redirectTo: '/results' };
+  }
+  
+  if (user.hasVoted) {
+      return { success: true, message: 'You have already voted. Redirecting...', redirectTo: '/vote' };
+  }
 
-  return { success: true, message: 'Login successful. Redirecting to vote...' };
+  if (electionStatus.status !== 'active') {
+    return { success: false, message: `The election is ${electionStatus.status.replace('_', ' ')}.` };
+  }
+
+  return { success: true, message: 'Login successful. Redirecting to vote...', redirectTo: '/vote' };
 }
 
 export async function adminLogin(prevState: any, formData: FormData) {

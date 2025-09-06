@@ -25,8 +25,8 @@ export default function StudentLoginForm() {
   const router = useRouter();
 
   useEffect(() => {
-    if (state.success) {
-      router.push('/vote');
+    if (state.success && state.redirectTo) {
+      router.push(state.redirectTo);
     }
   }, [state, router]);
 
