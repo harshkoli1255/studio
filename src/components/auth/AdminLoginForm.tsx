@@ -44,7 +44,6 @@ export default function AdminLoginForm() {
               type="text"
               placeholder="admin"
               required
-              defaultValue="admin"
             />
           </div>
           <div className="space-y-2">
@@ -55,7 +54,6 @@ export default function AdminLoginForm() {
               type="password"
               placeholder="••••••••"
               required
-              defaultValue="hadmin123"
             />
           </div>
         </CardContent>

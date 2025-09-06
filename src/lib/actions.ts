@@ -89,7 +89,7 @@ export async function studentLogin(prevState: any, formData: FormData): Promise<
     return { success: true, message: 'The election has ended. Redirecting to results...', redirectTo: '/results' };
   }
   
-  if (user.hasVoted) {
+  if (user.hasVoted && electionStatus.status !== 'active') {
       return { success: true, message: 'You have already voted. Redirecting...', redirectTo: '/vote' };
   }
 
