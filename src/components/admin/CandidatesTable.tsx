@@ -5,10 +5,10 @@ import Image from 'next/image';
 
 interface CandidatesTableProps {
   candidates: Candidate[];
+  totalVotes: number;
 }
 
-export default function CandidatesTable({ candidates }: CandidatesTableProps) {
-  const totalVotes = candidates.reduce((sum, c) => sum + c.voteCount, 0);
+export default function CandidatesTable({ candidates, totalVotes }: CandidatesTableProps) {
   const sortedCandidates = [...candidates].sort((a,b) => b.voteCount - a.voteCount);
 
   return (

@@ -142,7 +142,7 @@ export default function AdminDashboard({
                   <CardTitle>Live Vote Count</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CandidatesTable candidates={candidates} />
+                  <CandidatesTable candidates={candidates} totalVotes={totalVotes} />
                 </CardContent>
               </Card>
               
