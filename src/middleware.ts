@@ -26,11 +26,10 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Redirect logged-in student from login page
+  // Redirect logged-in student from login page to vote page
   if (pathname === '/' && isStudentAuth) {
     return NextResponse.redirect(new URL('/vote', request.url));
   }
-
 
   return NextResponse.next();
 }
