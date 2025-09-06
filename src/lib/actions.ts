@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 import { db } from './data';
 import type { Candidate, User } from './types';
 import { summarizeVoteResults } from '@/ai/flows/summarize-vote-results';
-import { parseVoters } from '@/ai/flows/parse-voters-flow';
+import { parseVoters, type ParseVotersOutput } from '@/ai/flows/parse-voters-flow';
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'hadmin123';
@@ -189,16 +189,16 @@ export async function addVoter(formData: FormData): Promise<{success: boolean, m
   }
 }
 
-export async function addBulkVoters(voters: {name: string, code: string}[]) {
+export async function addBulkVoters(votersData: ParseVotersOutput) {
     try {
-        const {voters: updatedVoters, addedCount, skippedCount} = db.addVoters(voters);
+        const {voters: updatedVoters, addedCount, skippedCount} = db.addVoters(votersData.voters);
         return { success: true, message: `${addedCount} voters added.`, voters: updatedVoters, addedCount, skippedCount };
     } catch(e: any) {
         return { success: false, message: "An error occurred while adding voters.", voters: null, addedCount: 0, skippedCount: 0 };
     }
 }
 
-export async function parseVotersCsv(formData: FormData): Promise<{success: boolean, message: string, voters: {name: string, code: string}[] | null}> {
+export async function parseVotersCsv(formData: FormData): Promise<{success: boolean, message: string, voters: ParseVotersOutput | null}> {
     const file = formData.get('voterCsv');
 
     const parsed = csvFileSchema.safeParse(file);
@@ -209,7 +209,7 @@ export async function parseVotersCsv(formData: FormData): Promise<{success: bool
     try {
         const csvText = await fileToText(parsed.data);
         const result = await parseVoters(csvText);
-        return { success: true, message: "CSV parsed successfully.", voters: result.voters };
+        return { success: true, message: "CSV parsed successfully.", voters: result };
     } catch (e: any) {
          console.error('Error parsing CSV:', e);
         return { success: false, message: "Could not parse CSV file. Please check the format.", voters: null };
