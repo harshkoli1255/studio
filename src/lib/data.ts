@@ -22,7 +22,16 @@ function loadDataFromFile(): AppData {
     if (fs.existsSync(dataPath)) {
       const fileContent = fs.readFileSync(dataPath, 'utf-8');
       if (fileContent.trim()) {
-        return JSON.parse(fileContent);
+        const parsedData = JSON.parse(fileContent);
+        // Ensure all keys are present, especially new ones like pastWinners
+        return {
+          users: parsedData.users || [],
+          candidates: parsedData.candidates || [],
+          votes: parsedData.votes || [],
+          pastWinners: parsedData.pastWinners || [],
+          electionStart: parsedData.electionStart || null,
+          electionEnd: parsedData.electionEnd || null,
+        };
       }
     }
   } catch (error) {
@@ -38,14 +47,12 @@ function loadDataFromFile(): AppData {
     electionStart: null,
     electionEnd: null,
   };
-  fs.writeFileSync(dataPath, JSON.stringify(defaultData, null, 2), 'utf-8');
+  // Don't write file on load, only on save
   return defaultData;
 }
 
 function getData(): AppData {
-  if (data === null) {
-    data = loadDataFromFile();
-  }
+  data = loadDataFromFile();
   return data;
 }
 
@@ -151,6 +158,9 @@ export const db = {
   
   getPastWinners: () => {
     const currentData = getData();
+    if (!currentData.pastWinners) {
+      return [];
+    }
     return currentData.pastWinners.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   },
 
@@ -274,6 +284,7 @@ export const db = {
             winners: winners.map(({id, name, voteCount}) => ({id, name, voteCount})),
             totalVotes,
         }
+        if (!currentData.pastWinners) currentData.pastWinners = [];
         currentData.pastWinners.push(newWinnerRecord);
     }
     
