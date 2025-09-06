@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { addCandidate } from '@/lib/actions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -32,7 +33,7 @@ interface CandidateFormProps {
 }
 
 export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) {
-  const [state, formAction] = useFormState(addCandidate, { success: false, message: '' });
+  const [state, formAction] = useActionState(addCandidate, { success: false, message: '' });
   const [randomImage, setRandomImage] = useState('https://picsum.photos/400/400?random=4');
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();

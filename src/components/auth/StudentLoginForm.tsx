@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { studentLogin } from '@/lib/actions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -19,7 +20,7 @@ function SubmitButton() {
 }
 
 export default function StudentLoginForm() {
-  const [state, formAction] = useFormState(studentLogin, { message: '' });
+  const [state, formAction] = useActionState(studentLogin, { message: '' });
 
   return (
     <form action={formAction}>
