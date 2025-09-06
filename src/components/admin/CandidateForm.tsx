@@ -34,13 +34,17 @@ interface CandidateFormProps {
 
 export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) {
   const [state, formAction] = useActionState(addCandidate, { success: false, message: '' });
-  const [randomImage, setRandomImage] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
   
+  const generateRandomImage = () => {
+    setImageUrl(`https://picsum.photos/400/400?random=${Math.random()}`);
+  }
+
   useEffect(() => {
-    // Generate the random number only on the client-side
-    setRandomImage(`https://picsum.photos/400/400?random=${Math.random()}`);
+    // Generate the initial random image only on the client-side
+    generateRandomImage();
   }, []);
 
   useEffect(() => {
@@ -65,10 +69,6 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
     }
   }, [state, toast, onCandidateAdded]);
 
-  const generateRandomImage = () => {
-    setRandomImage(`https://picsum.photos/400/400?random=${Math.random()}`);
-  }
-
   return (
     <Accordion type="single" collapsible>
       <AccordionItem value="add-candidate">
@@ -88,7 +88,7 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
               <div className="space-y-2">
                 <Label htmlFor="imageUrl">Image URL</Label>
                  <div className="flex gap-2">
-                    <Input id="imageUrl" name="imageUrl" value={randomImage} onChange={(e) => setRandomImage(e.target.value)} placeholder="https://example.com/image.png" required />
+                    <Input id="imageUrl" name="imageUrl" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://example.com/image.png" required />
                     <Button type="button" variant="outline" onClick={generateRandomImage}>Random</Button>
                 </div>
               </div>
