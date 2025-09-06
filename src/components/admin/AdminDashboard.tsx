@@ -43,7 +43,7 @@ export default function AdminDashboard({
     setVoters(initialVoters);
   }, [initialCandidates, initialTotalVotes, initialVoters]);
   
-  const votedCount = voters.filter(v => v.hasVoted).length;
+  const votedCount = initialVoters.filter(v => v.hasVoted).length;
   const turnout = voters.length > 0 ? (votedCount / voters.length) * 100 : 0;
   
   const leadingCandidate = candidates.length > 0 ? [...candidates].sort((a,b) => b.voteCount - a.voteCount)[0]?.name || 'N/A' : 'N/A';
@@ -94,7 +94,7 @@ export default function AdminDashboard({
               <Vote className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalVotes}</div>
+              <div className="text-2xl font-bold">{initialTotalVotes}</div>
             </CardContent>
           </Card>
           <Card>
@@ -152,7 +152,7 @@ export default function AdminDashboard({
                   <CardTitle>Live Vote Count</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CandidatesTable candidates={candidates} totalVotes={totalVotes} />
+                  <CandidatesTable candidates={candidates} totalVotes={initialTotalVotes} />
                 </CardContent>
               </Card>
               
