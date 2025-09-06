@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { LogOut, UserCheck, Home, Settings, Package2, PanelLeft, Search, Users, Trophy, BarChart3, ListChecks } from 'lucide-react';
+import { LogOut, UserCheck, Home, Settings, Package2, PanelLeft, Search, Users, Trophy, BarChart3, ListChecks, History } from 'lucide-react';
 import type { Candidate, User, PastWinner } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -54,6 +54,7 @@ export default function AdminDashboard({
   const [candidates, setCandidates] = useState<Candidate[]>(initialCandidates);
   const [totalVotes, setTotalVotes] = useState(initialTotalVotes);
   const [voters, setVoters] = useState<User[]>(initialVoters);
+  const [activeTab, setActiveTab] = useState('overview');
   const { toast } = useToast();
   
   useEffect(() => {
@@ -105,28 +106,29 @@ export default function AdminDashboard({
           <Link
             href="#"
             className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
+             onClick={(e) => { e.preventDefault(); setActiveTab('overview'); }}
           >
             <Package2 className="h-4 w-4 transition-all group-hover:scale-110" />
             <span className="sr-only">CR Vote</span>
           </Link>
-          <Link href="#" className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
+          <button onClick={() => setActiveTab('overview')} className={`flex h-9 w-9 items-center justify-center rounded-lg ${activeTab === 'overview' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}>
               <Home className="h-5 w-5" />
               <span className="sr-only">Dashboard</span>
-          </Link>
-           <Link href="#" className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
+          </button>
+           <button onClick={() => setActiveTab('voters')} className={`flex h-9 w-9 items-center justify-center rounded-lg ${activeTab === 'voters' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}>
               <Users className="h-5 w-5" />
               <span className="sr-only">Voters</span>
-          </Link>
+          </button>
             <Link href="/results" className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8" target="_blank">
               <Trophy className="h-5 w-5" />
               <span className="sr-only">Results</span>
           </Link>
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-4">
-           <Link href="#" className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
+           <button onClick={() => setActiveTab('settings')} className={`flex h-9 w-9 items-center justify-center rounded-lg ${activeTab === 'settings' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}>
               <Settings className="h-5 w-5" />
               <span className="sr-only">Settings</span>
-          </Link>
+          </button>
         </nav>
       </aside>
       <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
@@ -140,27 +142,27 @@ export default function AdminDashboard({
             </SheetTrigger>
             <SheetContent side="left" className="sm:max-w-xs">
               <nav className="grid gap-6 text-lg font-medium">
-                <Link
-                  href="#"
+                <button
+                  onClick={() => setActiveTab('overview')}
                   className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
                 >
                   <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
                   <span className="sr-only">CR Vote</span>
-                </Link>
-                <Link
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-foreground"
+                </button>
+                <button
+                  onClick={() => setActiveTab('overview')}
+                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
                   <Home className="h-5 w-5" />
                   Dashboard
-                </Link>
-                <Link
-                  href="#"
+                </button>
+                <button
+                  onClick={() => setActiveTab('voters')}
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
                   <Users className="h-5 w-5" />
                   Voters
-                </Link>
+                </button>
                  <Link
                   href="/results"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
@@ -169,13 +171,13 @@ export default function AdminDashboard({
                   <Trophy className="h-5 w-5" />
                   Results
                 </Link>
-                 <Link
-                  href="#"
+                 <button
+                  onClick={() => setActiveTab('settings')}
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
                   <Settings className="h-5 w-5" />
                   Settings
-                </Link>
+                </button>
               </nav>
             </SheetContent>
           </Sheet>
@@ -183,8 +185,12 @@ export default function AdminDashboard({
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
-                  <Link href="#">Dashboard</Link>
+                  <button onClick={() => setActiveTab('overview')}>Dashboard</button>
                 </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+               <BreadcrumbItem>
+                <BreadcrumbPage className="capitalize">{activeTab}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -209,7 +215,7 @@ export default function AdminDashboard({
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveTab('settings')}>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
                <DropdownMenuItem asChild>
                   <Link href="/">Student View</Link>
@@ -217,8 +223,8 @@ export default function AdminDashboard({
               <DropdownMenuItem>
                 <form action={logout}>
                     <button type="submit" className="flex items-center w-full text-left">
-                      <LogOut className="mr-2"/>
-                      Logout
+                      <LogOut className="mr-2 h-4 w-4"/>
+                      <span>Logout</span>
                     </button>
                 </form>
               </DropdownMenuItem>
@@ -226,13 +232,28 @@ export default function AdminDashboard({
           </DropdownMenu>
         </header>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-            <Tabs defaultValue="overview">
+            <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="overview">
               <TabsList>
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="candidates">Candidates</TabsTrigger>
-                <TabsTrigger value="voters">Voters</TabsTrigger>
-                <TabsTrigger value="history">History</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
+                <TabsTrigger value="overview">
+                    <Home className="mr-2 h-4 w-4"/>
+                    <span>Overview</span>
+                </TabsTrigger>
+                <TabsTrigger value="candidates">
+                    <Users className="mr-2 h-4 w-4"/>
+                    <span>Candidates</span>
+                </TabsTrigger>
+                <TabsTrigger value="voters">
+                    <UserCheck className="mr-2 h-4 w-4"/>
+                    <span>Voters</span>
+                </TabsTrigger>
+                <TabsTrigger value="history">
+                    <History className="mr-2 h-4 w-4"/>
+                    <span>History</span>
+                </TabsTrigger>
+                <TabsTrigger value="settings">
+                    <Settings className="mr-2 h-4 w-4"/>
+                    <span>Settings</span>
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="overview">
                  <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2 mt-4">
