@@ -12,7 +12,6 @@ import { z } from 'genkit';
 
 const VoterDataSchema = z.object({
   name: z.string().describe('The full name of the voter.'),
-  code: z.string().describe('The unique secret voting code for the voter.'),
 });
 
 const ParseVotersOutputSchema = z.object({
@@ -29,11 +28,22 @@ const prompt = ai.definePrompt({
   name: 'parseVotersPrompt',
   input: { schema: z.string() },
   output: { schema: ParseVotersOutputSchema },
-  prompt: `You are an expert data processor. Your task is to parse the provided CSV data and extract voter information into a JSON object with a single key "voters" which contains an array of voter objects.
+  prompt: `You are an expert data processor. Your task is to parse the provided CSV data which contains a list of names and extract them into a JSON object.
 
-The CSV data will have two columns. One column is for the voter's full name, and the other is for their secret voting code. The columns might not be in a consistent order, and the headers might have different names (e.g., "Student Name", "Name", "Voter"; "Code", "Secret", "PIN").
+The final JSON object must have a single key "voters" which contains an array of voter objects, where each object has a "name" key.
 
-Your job is to automatically identify which column corresponds to the name and which to the code, and then extract all the rows into the structured JSON array.
+Example:
+CSV Input:
+John Doe
+Jane Smith
+
+JSON Output:
+{
+  "voters": [
+    { "name": "John Doe" },
+    { "name": "Jane Smith" }
+  ]
+}
 
 Here is the CSV data:
 {{{input}}}

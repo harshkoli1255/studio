@@ -22,7 +22,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import type { ParseVotersOutput } from '@/ai/flows/parse-voters-flow';
 
 interface VoterManagementProps {
   voters: User[];
@@ -105,7 +104,7 @@ export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }
             return;
         }
         
-        const addResult = await addBulkVoters(parseResult.voters.voters);
+        const addResult = await addBulkVoters(parseResult.voters.voters.map(v => v.name));
         if (addResult.success && addResult.voters) {
             toast({ title: 'Success', description: `${addResult.addedCount} voters added successfully.` });
             if(addResult.skippedCount > 0) {
@@ -146,7 +145,7 @@ export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }
           <CardHeader>
             <CardTitle>Bulk Add Voters via CSV</CardTitle>
             <CardDescription>
-              Upload a CSV with `name` and `code` columns. The AI will detect the columns automatically.
+              Upload a CSV with a single `name` column. A unique code will be generated for each voter.
             </CardDescription>
           </CardHeader>
           <CardContent>

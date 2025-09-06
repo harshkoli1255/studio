@@ -191,9 +191,9 @@ export async function addVoter(formData: FormData) {
   }
 }
 
-export async function addBulkVoters(votersToAdd: {name: string, code: string}[]) {
+export async function addBulkVoters(voterNames: string[]) {
     try {
-        const {voters: updatedVoters, addedCount, skippedCount} = db.addVoters(votersToAdd);
+        const {voters: updatedVoters, addedCount, skippedCount} = db.addVoters(voterNames);
         return { success: true, message: `${addedCount} voters added.`, voters: updatedVoters, addedCount, skippedCount };
     } catch(e: any) {
         return { success: false, message: "An error occurred while adding voters.", voters: null, addedCount: 0, skippedCount: 0 };

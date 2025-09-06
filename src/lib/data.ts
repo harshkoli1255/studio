@@ -127,15 +127,14 @@ export const db = {
     return db.getUsers();
   },
 
-  addVoters: (votersToAdd: {name: string, code: string}[]) => {
+  addVoters: (voterNames: string[]) => {
     const currentData = getData();
     let addedCount = 0;
     let skippedCount = 0;
 
-    votersToAdd.forEach(voter => {
+    voterNames.forEach(name => {
       const alreadyExists = currentData.users.some(u => 
-        u.name.toLowerCase() === voter.name.toLowerCase() && 
-        u.code.toUpperCase() === voter.code.toUpperCase()
+        u.name.toLowerCase() === name.toLowerCase()
       );
 
       if (alreadyExists) {
@@ -143,8 +142,8 @@ export const db = {
       } else {
         const newUser: User = {
           id: generateUniqueId('user'),
-          name: voter.name,
-          code: voter.code.toUpperCase(),
+          name: name,
+          code: generateUniqueCode(),
           hasVoted: false,
         };
         currentData.users.push(newUser);
