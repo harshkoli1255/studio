@@ -12,20 +12,28 @@ const ADMIN_COOKIE = 'admin-auth';
 const STUDENT_COOKIE = 'student-auth';
 
 const loginSchema = z.object({
-  email: z.string().email({ message: 'Please enter a valid email.' }),
+  name: z.string().min(1, { message: 'Please enter your full name.' }),
+  code: z.string().min(1, { message: 'Please enter your voting code.' }),
 });
 
 export async function studentLogin(prevState: any, formData: FormData) {
-  const parsed = loginSchema.safeParse({ email: formData.get('email') });
+  const parsed = loginSchema.safeParse({
+    name: formData.get('name'),
+    code: formData.get('code'),
+  });
 
   if (!parsed.success) {
     return { message: parsed.error.errors[0].message };
   }
 
-  const user = db.getUserByEmail(parsed.data.email);
+  const user = db.getUserByNameAndCode(parsed.data.name, parsed.data.code);
 
   if (!user) {
-    return { message: 'Student ID not found.' };
+    return { message: 'Invalid name or voting code.' };
+  }
+
+  if (user.hasVoted) {
+    return { message: 'This voting code has already been used.' };
   }
   
   cookies().set(STUDENT_COOKIE, user.id, {

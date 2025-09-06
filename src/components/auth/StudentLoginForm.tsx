@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { Label } from '../ui/label';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -32,11 +33,22 @@ export default function StudentLoginForm() {
               </Alert>
             )}
             <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
               <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="student@college.edu"
+                id="name"
+                name="name"
+                type="text"
+                placeholder="e.g. John Doe"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="code">Voting Code</Label>
+              <Input
+                id="code"
+                name="code"
+                type="text"
+                placeholder="e.g. X7R9K2LQ"
                 required
               />
             </div>

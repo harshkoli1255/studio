@@ -27,7 +27,7 @@ export default async function VotePage() {
           <Logo />
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground hidden sm:inline">
-              {user.email}
+              {user.name}
             </span>
              <form action={logout}>
                 <Button variant="outline" size="sm">

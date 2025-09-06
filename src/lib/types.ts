@@ -1,7 +1,9 @@
 export type User = {
   id: string;
-  email: string;
+  name: string;
+  code: string;
   hasVoted: boolean;
+  email?: string;
 };
 
 export type Candidate = {
