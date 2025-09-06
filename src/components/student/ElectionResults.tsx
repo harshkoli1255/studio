@@ -14,12 +14,34 @@ export default function ElectionResults({ candidates, totalVotes }: ElectionResu
   const getWinners = () => {
     if (candidates.length === 0) return [];
     const maxVotes = Math.max(...candidates.map(c => c.voteCount));
-    if (maxVotes === 0) return []; // No winner if no votes
+    // If maxVotes is 0, all candidates are "winners" with 0 votes, which we'll handle as a no-vote scenario.
+    if (maxVotes === 0 && totalVotes === 0) return [];
     return candidates.filter(c => c.voteCount === maxVotes);
   };
   
   const winners = getWinners();
-  const winnerText = winners.length > 1 ? 'It\'s a tie!' : winners.length === 1 ? `Congratulations to ${winners[0].name}!` : 'The Election Has Ended';
+  
+  const getWinnerText = () => {
+    if (totalVotes === 0) {
+        return "The Election Has Ended";
+    }
+    if (winners.length > 1) {
+        return "It's a Tie!";
+    }
+    if (winners.length === 1) {
+        return `Congratulations to ${winners[0].name}!`;
+    }
+    return "The Election Has Ended"; // Fallback
+  }
+
+  const winnerText = getWinnerText();
+
+  const getDescriptionText = () => {
+    if (totalVotes === 0) {
+        return "No votes were cast in this election.";
+    }
+    return "Here are the final results of the election.";
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
@@ -35,12 +57,12 @@ export default function ElectionResults({ candidates, totalVotes }: ElectionResu
              </div>
              <CardTitle className="text-4xl font-bold tracking-tight">{winnerText}</CardTitle>
              <CardDescription className="text-lg mt-2 text-muted-foreground">
-                {winners.length > 0 ? 'Here are the final results of the election.' : 'No votes were cast in this election.'}
+                {getDescriptionText()}
              </CardDescription>
            </CardHeader>
            <CardContent className="p-8">
              {winners.length > 0 && (
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-8 my-8">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-8 mb-8">
                     {winners.map(winner => (
                        <div key={winner.id} className="flex flex-col items-center gap-3">
                          <Image
@@ -48,6 +70,7 @@ export default function ElectionResults({ candidates, totalVotes }: ElectionResu
                            alt={winner.name}
                            width={120}
                            height={120}
+                           data-ai-hint={winner.dataAiHint}
                            className="rounded-full border-4 border-amber-400 object-cover shadow-lg"
                          />
                          <p className="font-bold text-xl">{winner.name}</p>
