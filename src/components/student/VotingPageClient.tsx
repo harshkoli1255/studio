@@ -48,12 +48,11 @@ export default function VotingPageClient({
       });
       setHasVoted(true);
       // Optimistically update vote counts
-      setCandidates(
-        candidates.map(c =>
-          c.id === selectedCandidate ? { ...c, voteCount: c.voteCount + 1 } : c
-        )
+      const newCandidates = candidates.map(c =>
+        c.id === selectedCandidate ? { ...c, voteCount: c.voteCount + 1 } : c
       );
-      setTotalVotes(totalVotes + 1);
+      setCandidates(newCandidates);
+      setTotalVotes(prev => prev + 1);
     } else {
       toast({
         title: 'Vote Failed',
@@ -104,7 +103,6 @@ export default function VotingPageClient({
           onClick={handleVote}
           disabled={selectedCandidate === null || isSubmitting}
           className="w-full max-w-xs"
-          variant="accent"
         >
           {isSubmitting ? 'Casting Vote...' : 'Cast My Vote'}
         </Button>
