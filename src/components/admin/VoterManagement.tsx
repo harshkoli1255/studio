@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState, useRef, useEffect } from 'react';
+import { useActionState, useRef, useEffect, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -49,19 +49,24 @@ function DeleteVoterButton({ voterId, onVoterDeleted }: { voterId: string, onVot
 
 
 export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }: VoterManagementProps) {
-  const [state, formAction] = useActionState(addVoter, { success: false, message: '', voters: null });
+  const [state, formAction] = useActionState(addVoter, { success: false, message: '', voters: null, actionId: '' });
+  const [lastActionId, setLastActionId] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (state.success && state.voters) {
-      toast({ title: 'Success', description: state.message });
-      formRef.current?.reset();
-      onVoterAdded(state.voters);
-    } else if (state.message) {
-      toast({ title: 'Error', description: state.message, variant: 'destructive' });
+    if (state.actionId && state.actionId !== lastActionId) {
+      if (state.success && state.voters) {
+        toast({ title: 'Success', description: state.message });
+        formRef.current?.reset();
+        onVoterAdded(state.voters);
+        setLastActionId(state.actionId);
+      } else if (state.message) {
+        toast({ title: 'Error', description: state.message, variant: 'destructive' });
+        setLastActionId(state.actionId);
+      }
     }
-  }, [state, toast, onVoterAdded]);
+  }, [state, toast, onVoterAdded, lastActionId]);
 
   return (
     <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">

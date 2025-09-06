@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import { db } from './data';
 import type { Candidate, User } from './types';
 import { summarizeVoteResults } from '@/ai/flows/summarize-vote-results';
+import { randomBytes } from 'crypto';
 
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'hadmin123';
@@ -196,21 +197,23 @@ const voterSchema = z.object({
     voterName: z.string().min(3, 'Voter name must be at least 3 characters long.'),
 });
 
-export async function addVoter(prevState: any, formData: FormData): Promise<{success: boolean, message: string, voters: User[] | null}> {
+export async function addVoter(prevState: any, formData: FormData): Promise<{success: boolean, message: string, voters: User[] | null, actionId: string}> {
     const parsed = voterSchema.safeParse({
         voterName: formData.get('voterName'),
     });
+    
+    const actionId = randomBytes(8).toString('hex');
 
     if (!parsed.success) {
-        return { success: false, message: parsed.error.errors[0].message, voters: null };
+        return { success: false, message: parsed.error.errors[0].message, voters: null, actionId };
     }
 
     try {
         db.addVoter(parsed.data.voterName);
         const updatedVoters = db.getUsers();
-        return { success: true, message: 'Voter added successfully.', voters: updatedVoters };
+        return { success: true, message: 'Voter added successfully.', voters: updatedVoters, actionId };
     } catch(e: any) {
-        return { success: false, message: e.message, voters: null };
+        return { success: false, message: e.message, voters: null, actionId };
     }
 }
 
