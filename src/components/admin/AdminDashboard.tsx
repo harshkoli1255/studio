@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import Summary from './Summary';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import VoterManagement from './VoterManagement';
+import { db } from '@/lib/data';
 
 interface AdminDashboardProps {
   initialCandidates: Candidate[];
@@ -50,11 +51,11 @@ export default function AdminDashboard({
   };
 
   const onCandidateAdded = (newCandidate: Candidate) => {
-    setCandidates(prev => [...prev, newCandidate].sort((a,b) => a.id - b.id));
+    setCandidates(db.getCandidates());
   };
   
   const onVoterAdded = (updatedVoters: User[]) => {
-    setVoters(updatedVoters);
+    setVoters(db.getUsers());
   }
 
   const onVoterDeleted = (deletedVoterId: string) => {
