@@ -25,9 +25,9 @@ export default function AdminDashboard({
   initialTotalVotes,
   initialVoters,
 }: AdminDashboardProps) {
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [totalVotes, setTotalVotes] = useState(0);
-  const [voters, setVoters] = useState<User[]>([]);
+  const [candidates, setCandidates] = useState<Candidate[]>(initialCandidates);
+  const [totalVotes, setTotalVotes] = useState(initialTotalVotes);
+  const [voters, setVoters] = useState<User[]>(initialVoters);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -54,7 +54,7 @@ export default function AdminDashboard({
   };
   
   const onVoterAdded = (newVoter: User) => {
-    setVoters(prev => [...prev, newVoter]);
+    setVoters(prev => [...prev, newVoter].sort((a,b) => a.name.localeCompare(b.name)));
   }
 
   const onVoterDeleted = (deletedVoterId: string) => {
