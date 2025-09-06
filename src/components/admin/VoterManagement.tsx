@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import type { ParseVotersOutput } from '@/ai/flows/parse-voters-flow';
 
 interface VoterManagementProps {
   voters: User[];
@@ -70,23 +71,23 @@ function DeleteVoterButton({ voterId, onVoterDeleted }: { voterId: string, onVot
 
 
 export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }: VoterManagementProps) {
-  const [isAdding, setIsAdding] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [isAdding, setIsAdding] = useTransition();
+  const [isUploading, setIsUploading] = useTransition();
   const singleVoterFormRef = useRef<HTMLFormElement>(null);
   const csvFormRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
   const handleAddVoter = async (formData: FormData) => {
-    setIsAdding(true);
-    const result = await addVoter(formData);
-    if(result.success && result.voters) {
-        toast({ title: 'Success', description: result.message });
-        singleVoterFormRef.current?.reset();
-        onVoterAdded(result.voters);
-    } else if (result.message) {
-        toast({ title: 'Error', description: result.message, variant: 'destructive' });
-    }
-    setIsAdding(false);
+    setIsAdding(async () => {
+        const result = await addVoter(formData);
+        if(result.success && result.voters) {
+            toast({ title: 'Success', description: result.message });
+            singleVoterFormRef.current?.reset();
+            onVoterAdded(result.voters);
+        } else if (result.message) {
+            toast({ title: 'Error', description: result.message, variant: 'destructive' });
+        }
+    });
   }
   
   const handleCsvUpload = async (formData: FormData) => {
@@ -95,28 +96,26 @@ export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }
         toast({ title: 'Error', description: 'Please select a CSV file to upload.', variant: 'destructive' });
         return;
     }
-    setIsUploading(true);
 
-    const parseResult = await parseVotersCsv(formData);
-    if (!parseResult.success || !parseResult.voters) {
-        toast({ title: 'Parsing Error', description: parseResult.message, variant: 'destructive' });
-        setIsUploading(false);
-        return;
-    }
-    
-    const addResult = await addBulkVoters(parseResult.voters);
-     if (addResult.success && addResult.voters) {
-        toast({ title: 'Success', description: `${addResult.addedCount} voters added successfully.` });
-        if(addResult.skippedCount > 0) {
-            toast({ title: 'Notice', description: `${addResult.skippedCount} voters were skipped because they already exist.` });
+    setIsUploading(async () => {
+        const parseResult = await parseVotersCsv(formData);
+        if (!parseResult.success || !parseResult.voters) {
+            toast({ title: 'Parsing Error', description: parseResult.message, variant: 'destructive' });
+            return;
         }
-        csvFormRef.current?.reset();
-        onVoterAdded(addResult.voters);
-    } else {
-        toast({ title: 'Error', description: addResult.message, variant: 'destructive' });
-    }
-    
-    setIsUploading(false);
+        
+        const addResult = await addBulkVoters(parseResult.voters);
+        if (addResult.success && addResult.voters) {
+            toast({ title: 'Success', description: `${addResult.addedCount} voters added successfully.` });
+            if(addResult.skippedCount > 0) {
+                toast({ title: 'Notice', description: `${addResult.skippedCount} voters were skipped because they already exist.` });
+            }
+            csvFormRef.current?.reset();
+            onVoterAdded(addResult.voters);
+        } else {
+            toast({ title: 'Error', description: addResult.message, variant: 'destructive' });
+        }
+    });
   }
 
   return (
@@ -133,7 +132,7 @@ export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }
             <form ref={singleVoterFormRef} action={handleAddVoter} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="voterName">Voter Name</Label>
-                <Input id="voterName" name="voterName" placeholder="e.g., John Doe" required />
+                <Input id="voterName" name="voterName" placeholder="e.g., John Doe" required disabled={isAdding}/>
               </div>
               <Button type="submit" disabled={isAdding} className="w-full sm:w-auto">
                  {isAdding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
@@ -153,7 +152,7 @@ export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }
              <form ref={csvFormRef} action={handleCsvUpload} className="space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="voterCsv">CSV File</Label>
-                    <Input id="voterCsv" name="voterCsv" type="file" accept=".csv" required />
+                    <Input id="voterCsv" name="voterCsv" type="file" accept=".csv" required disabled={isUploading}/>
                 </div>
                  <Button type="submit" disabled={isUploading} className="w-full sm:w-auto">
                     {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { adminLogin } from '@/lib/actions';
 import { Input } from '@/components/ui/input';
@@ -20,7 +20,7 @@ function SubmitButton() {
 }
 
 export default function AdminLoginForm() {
-  const [state, formAction] = useActionState(adminLogin, { message: '' });
+  const [state, formAction, isPending] = useActionState(adminLogin, null);
 
   return (
     <form action={formAction}>
@@ -30,7 +30,7 @@ export default function AdminLoginForm() {
           <CardDescription>Enter the password to manage the election.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {state.message && (
+          {state?.message && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{state.message}</AlertDescription>
@@ -44,6 +44,7 @@ export default function AdminLoginForm() {
               type="text"
               placeholder="admin"
               required
+              disabled={isPending}
             />
           </div>
           <div className="space-y-2">
@@ -54,6 +55,7 @@ export default function AdminLoginForm() {
               type="password"
               placeholder="••••••••"
               required
+              disabled={isPending}
             />
           </div>
         </CardContent>

@@ -63,7 +63,7 @@ const csvFileSchema = z.instanceof(File)
 
 // --- Server Actions ---
 
-export async function studentLogin(prevState: any, formData: FormData): Promise<{ success: boolean; message: string; redirectTo?: string; }> {
+export async function studentLogin(prevState: any, formData: FormData): Promise<{ success: boolean; message: string; }> {
   const electionStatus = db.getElectionStatus();
   
   const parsed = loginSchema.safeParse(Object.fromEntries(formData));
@@ -77,27 +77,33 @@ export async function studentLogin(prevState: any, formData: FormData): Promise<
   if (!user) {
     return { success: false, message: 'Invalid name or voting code.' };
   }
+  
+  if (user.hasVoted) {
+     cookies().set(STUDENT_COOKIE, user.id, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 60 * 60 * 24, // 1 day
+        path: '/',
+      });
+      return { success: true, message: 'Login successful. Redirecting to vote...' };
+  }
 
+  if (electionStatus.status === 'ended') {
+    return { success: false, message: 'The election has already ended.' };
+  }
+  
+  if (electionStatus.status !== 'active') {
+    return { success: false, message: `The election is ${electionStatus.status.replace('_', ' ')}.` };
+  }
+  
   cookies().set(STUDENT_COOKIE, user.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     maxAge: 60 * 60 * 24, // 1 day
     path: '/',
   });
-  
-  if (electionStatus.status === 'ended') {
-    return { success: true, message: 'The election has ended. Redirecting to results...', redirectTo: '/results' };
-  }
-  
-  if (user.hasVoted && electionStatus.status !== 'active') {
-      return { success: true, message: 'You have already voted. Redirecting...', redirectTo: '/vote' };
-  }
 
-  if (electionStatus.status !== 'active') {
-    return { success: false, message: `The election is ${electionStatus.status.replace('_', ' ')}.` };
-  }
-
-  return { success: true, message: 'Login successful. Redirecting to vote...', redirectTo: '/vote' };
+  return { success: true, message: 'Login successful. Redirecting to vote...' };
 }
 
 export async function adminLogin(prevState: any, formData: FormData) {
@@ -180,7 +186,7 @@ export async function deleteCandidate(candidateId: number) {
   }
 }
 
-export async function addVoter(formData: FormData): Promise<{success: boolean, message: string, voters: User[] | null }> {
+export async function addVoter(formData: FormData) {
   const parsed = voterSchema.safeParse(Object.fromEntries(formData));
 
   if (!parsed.success) {
@@ -204,7 +210,7 @@ export async function addBulkVoters(votersData: ParseVotersOutput['voters']) {
     }
 }
 
-export async function parseVotersCsv(formData: FormData): Promise<{success: boolean, message: string, voters: ParseVotersOutput | null}> {
+export async function parseVotersCsv(formData: FormData): Promise<{success: boolean, message: string, voters: ParseVotersOutput['voters'] | null}> {
     const file = formData.get('voterCsv');
 
     const parsed = csvFileSchema.safeParse(file);
@@ -215,7 +221,7 @@ export async function parseVotersCsv(formData: FormData): Promise<{success: bool
     try {
         const csvText = await fileToText(parsed.data);
         const result = await parseVoters(csvText);
-        return { success: true, message: "CSV parsed successfully.", voters: result };
+        return { success: true, message: "CSV parsed successfully.", voters: result.voters };
     } catch (e: any) {
          console.error('Error parsing CSV:', e);
         return { success: false, message: "Could not parse CSV file. Please check the format.", voters: null };
