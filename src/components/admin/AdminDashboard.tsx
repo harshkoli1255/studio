@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BarChart, Users, Percent, Vote, LogOut, UserCheck, Home, Settings, Package2, PanelLeft, Search, Users2, Trophy } from 'lucide-react';
+import { LogOut, UserCheck, Home, Settings, Package2, PanelLeft, Search, Users, Trophy, BarChart3, ListChecks } from 'lucide-react';
 import type { Candidate, User, PastWinner } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -77,8 +77,12 @@ export default function AdminDashboard({
     setCandidates(updatedCandidates);
   };
 
-  const onCandidateDeleted = (candidateId: number) => {
-    setCandidates(prev => prev.filter(c => c.id !== candidateId));
+  const onCandidateDeleted = (deletedCandidateId: number) => {
+    const deletedCandidate = candidates.find(c => c.id === deletedCandidateId);
+    if(deletedCandidate) {
+      setTotalVotes(prev => prev - deletedCandidate.voteCount);
+    }
+    setCandidates(prev => prev.filter(c => c.id !== deletedCandidateId));
   }
   
   const onVoterAdded = (updatedVoters: User[]) => {
@@ -86,6 +90,11 @@ export default function AdminDashboard({
   }
 
   const onVoterDeleted = (deletedVoterId: string) => {
+    const deletedVoter = voters.find(v => v.id === deletedVoterId);
+    if (deletedVoter?.hasVoted) {
+      // This is a simplification; in a real app, you'd need to invalidate the vote too.
+      setTotalVotes(prev => prev -1);
+    }
     setVoters(prev => prev.filter(v => v.id !== deletedVoterId));
   }
 
@@ -105,14 +114,16 @@ export default function AdminDashboard({
               <span className="sr-only">Dashboard</span>
           </Link>
            <Link href="#" className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
-              <Users2 className="h-5 w-5" />
+              <Users className="h-5 w-5" />
               <span className="sr-only">Voters</span>
           </Link>
             <Link href="/results" className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8" target="_blank">
               <Trophy className="h-5 w-5" />
               <span className="sr-only">Results</span>
           </Link>
-          <Link href="#" className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
+        </nav>
+        <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-4">
+           <Link href="#" className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
               <Settings className="h-5 w-5" />
               <span className="sr-only">Settings</span>
           </Link>
@@ -147,7 +158,7 @@ export default function AdminDashboard({
                   href="#"
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
-                  <Users2 className="h-5 w-5" />
+                  <Users className="h-5 w-5" />
                   Voters
                 </Link>
                  <Link
@@ -192,7 +203,7 @@ export default function AdminDashboard({
                 size="icon"
                 className="overflow-hidden rounded-full"
               >
-                 <Users className="h-5 w-5" />
+                 <UserCheck className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -205,139 +216,141 @@ export default function AdminDashboard({
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <form action={logout}>
-                    <button type="submit" className="w-full text-left">Logout</button>
+                    <button type="submit" className="flex items-center w-full text-left">
+                      <LogOut className="mr-2"/>
+                      Logout
+                    </button>
                 </form>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-            <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
-                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-                     <Card>
-                        <CardHeader className="pb-2">
-                        <CardDescription>Total Votes</CardDescription>
-                        <CardTitle className="text-4xl">{totalVotes}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                        <div className="text-xs text-muted-foreground">
-                            Leading: {leadingCandidate}
-                        </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="pb-2">
-                        <CardDescription>Total Voters</CardDescription>
-                        <CardTitle className="text-4xl">{voters.length}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                        <div className="text-xs text-muted-foreground">
-                            Registered students
-                        </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="pb-2">
-                        <CardDescription>Voted Students</CardDescription>
-                        <CardTitle className="text-4xl">{votedCount}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                        <div className="text-xs text-muted-foreground">
-                            Have cast their ballot
-                        </div>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="pb-2">
-                        <CardDescription>Voter Turnout</CardDescription>
-                        <CardTitle className="text-4xl">{turnout.toFixed(1)}%</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                        <div className="text-xs text-muted-foreground">
-                           Percentage of voters
-                        </div>
-                        </CardContent>
-                    </Card>
-                 </div>
-                 <Summary />
-                  <Tabs defaultValue="results">
-                    <TabsList className="grid w-full grid-cols-4">
-                        <TabsTrigger value="results">Results & Candidates</TabsTrigger>
-                        <TabsTrigger value="voters">Voter Management</TabsTrigger>
-                        <TabsTrigger value="history">Past Winners</TabsTrigger>
-                        <TabsTrigger value="settings">Election Settings</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="results">
-                        <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
-                        <Card className="h-fit">
-                            <CardHeader>
-                            <CardTitle>Live Vote Count</CardTitle>
+            <Tabs defaultValue="overview">
+              <TabsList>
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="candidates">Candidates</TabsTrigger>
+                <TabsTrigger value="voters">Voters</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
+                <TabsTrigger value="settings">Settings</TabsTrigger>
+              </TabsList>
+              <TabsContent value="overview">
+                 <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2 mt-4">
+                     <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+                         <Card>
+                            <CardHeader className="pb-2 flex-row items-center justify-between">
+                              <CardTitle className="text-sm font-medium">Total Votes</CardTitle>
+                              <ListChecks className="text-muted-foreground h-4 w-4"/>
                             </CardHeader>
                             <CardContent>
-                            <CandidatesTable 
-                                candidates={candidates} 
-                                totalVotes={totalVotes}
-                                onCandidateDeleted={onCandidateDeleted}
-                            />
+                              <div className="text-2xl font-bold">{totalVotes}</div>
+                              <p className="text-xs text-muted-foreground">Leading: {leadingCandidate}</p>
                             </CardContent>
                         </Card>
-                        
-                        <div className="space-y-4">
-                            <Card>
-                            <CardHeader className="flex flex-row items-center justify-between">
-                                <CardTitle>Add New Candidate</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <CandidateForm onCandidateAdded={onCandidateAdded} />
-                            </CardContent>
-                            </Card>
-                        </div>
-                        </div>
-                    </TabsContent>
-                    <TabsContent value="voters">
-                        <VoterManagement 
-                            voters={voters}
-                            onVoterAdded={onVoterAdded}
-                            onVoterDeleted={onVoterDeleted}
-                        />
-                    </TabsContent>
-                    <TabsContent value="history">
-                       <PastWinnersList pastWinners={initialPastWinners} />
-                    </TabsContent>
-                    <TabsContent value="settings">
-                        <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
-                        <ElectionTimer initialStatus={initialElectionStatus}/>
                         <Card>
-                            <CardHeader className="flex flex-row items-center justify-between">
-                                <CardTitle>Reset Election</CardTitle>
+                            <CardHeader className="pb-2 flex-row items-center justify-between">
+                              <CardTitle className="text-sm font-medium">Total Voters</CardTitle>
+                               <Users className="text-muted-foreground h-4 w-4"/>
                             </CardHeader>
-                            <CardContent className="space-y-2">
-                                <p className="text-sm text-muted-foreground">This will permanently delete all votes and reset the election schedule. Candidates and voters will not be deleted.</p>
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" className="w-full">
-                                        Reset All Votes
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                        This action cannot be undone. This will permanently delete all vote records and reset the election schedule. Candidates and voters will NOT be deleted.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleReset}>Continue</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
+                            <CardContent>
+                              <div className="text-2xl font-bold">{voters.length}</div>
+                              <p className="text-xs text-muted-foreground">Registered students</p>
                             </CardContent>
-                            </Card>
-                        </div>
-                    </TabsContent>
-                    </Tabs>
-            </div>
+                        </Card>
+                         <Card>
+                            <CardHeader className="pb-2 flex-row items-center justify-between">
+                              <CardTitle className="text-sm font-medium">Voted</CardTitle>
+                               <UserCheck className="text-muted-foreground h-4 w-4"/>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="text-2xl font-bold">{votedCount}</div>
+                              <p className="text-xs text-muted-foreground">Have cast their ballot</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2 flex-row items-center justify-between">
+                              <CardTitle className="text-sm font-medium">Turnout</CardTitle>
+                               <BarChart3 className="text-muted-foreground h-4 w-4"/>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="text-2xl font-bold">{turnout.toFixed(1)}%</div>
+                              <p className="text-xs text-muted-foreground">Voter participation</p>
+                            </CardContent>
+                        </Card>
+                     </div>
+                     <Summary />
+                  </div>
+              </TabsContent>
+              <TabsContent value="candidates">
+                  <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
+                  <Card className="h-fit">
+                      <CardHeader>
+                      <CardTitle>Live Vote Count</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                      <CandidatesTable 
+                          candidates={candidates} 
+                          totalVotes={totalVotes}
+                          onCandidateDeleted={onCandidateDeleted}
+                      />
+                      </CardContent>
+                  </Card>
+                  
+                  <div className="space-y-4">
+                      <Card>
+                      <CardHeader className="flex flex-row items-center justify-between">
+                          <CardTitle>Add New Candidate</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                          <CandidateForm onCandidateAdded={onCandidateAdded} />
+                      </CardContent>
+                      </Card>
+                  </div>
+                  </div>
+              </TabsContent>
+              <TabsContent value="voters">
+                  <VoterManagement 
+                      voters={voters}
+                      onVoterAdded={onVoterAdded}
+                      onVoterDeleted={onVoterDeleted}
+                  />
+              </TabsContent>
+              <TabsContent value="history">
+                  <PastWinnersList pastWinners={initialPastWinners} />
+              </TabsContent>
+              <TabsContent value="settings">
+                  <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
+                  <ElectionTimer initialStatus={initialElectionStatus}/>
+                  <Card>
+                      <CardHeader className="flex flex-row items-center justify-between">
+                          <CardTitle>Reset Election</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-2">
+                          <p className="text-sm text-muted-foreground">This will permanently delete all votes and reset the election schedule. Candidates and voters will not be deleted.</p>
+                          <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                              <Button variant="destructive" className="w-full">
+                                  Reset All Votes
+                                  </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                              <AlertDialogHeader>
+                                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                  This action cannot be undone. This will permanently delete all vote records and reset the election schedule. Candidates and voters will NOT be deleted.
+                                  </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={handleReset}>Continue</AlertDialogAction>
+                              </AlertDialogFooter>
+                              </AlertDialogContent>
+                          </AlertDialog>
+                      </CardContent>
+                      </Card>
+                  </div>
+              </TabsContent>
+            </Tabs>
         </main>
       </div>
     </div>

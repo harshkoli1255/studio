@@ -18,13 +18,14 @@ interface AppData {
 let data: AppData | null = null;
 
 function loadDataFromFile(): AppData {
+   if (data) return data; // Return cached data if available
   try {
     if (fs.existsSync(dataPath)) {
       const fileContent = fs.readFileSync(dataPath, 'utf-8');
       if (fileContent.trim()) {
         const parsedData = JSON.parse(fileContent);
-        // Ensure all keys are present, especially new ones like pastWinners
-        return {
+        // Ensure all keys are present
+        data = {
           users: parsedData.users || [],
           candidates: parsedData.candidates || [],
           votes: parsedData.votes || [],
@@ -32,6 +33,7 @@ function loadDataFromFile(): AppData {
           electionStart: parsedData.electionStart || null,
           electionEnd: parsedData.electionEnd || null,
         };
+        return data;
       }
     }
   } catch (error) {
@@ -39,7 +41,7 @@ function loadDataFromFile(): AppData {
   }
 
   // Return a default structure if file doesn't exist or is empty
-  const defaultData: AppData = {
+  data = {
     users: [],
     candidates: [],
     votes: [],
@@ -47,26 +49,21 @@ function loadDataFromFile(): AppData {
     electionStart: null,
     electionEnd: null,
   };
-  // Don't write file on load, only on save
-  return defaultData;
-}
-
-function getData(): AppData {
-  data = loadDataFromFile();
   return data;
 }
 
-function saveData(dataToSave: AppData): void {
-  data = dataToSave;
+function saveData(): void {
+  if (!data) return;
   try {
-    fs.writeFileSync(dataPath, JSON.stringify(dataToSave, null, 2), 'utf-8');
+    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), 'utf-8');
   } catch (error) {
     console.error('Error saving data:', error);
   }
 }
 
 
-function generateUniqueCode(currentData: AppData) {
+function generateUniqueCode() {
+  const currentData = loadDataFromFile();
   let code: string;
   let isUnique = false;
   while(!isUnique) {
@@ -78,7 +75,8 @@ function generateUniqueCode(currentData: AppData) {
   return code!;
 }
 
-function generateUniqueId(type: 'user' | 'candidate', currentData: AppData) {
+function generateUniqueId(type: 'user' | 'candidate') {
+    const currentData = loadDataFromFile();
     let id: string;
     let isUnique = false;
 
@@ -99,38 +97,38 @@ function generateUniqueId(type: 'user' | 'candidate', currentData: AppData) {
 
 export const db = {
   getUserByNameAndCode: (name: string, code: string) => {
-    const currentData = getData();
+    const currentData = loadDataFromFile();
     return currentData.users.find((user) => user.name.toLowerCase() === name.toLowerCase() && user.code === code.toUpperCase());
   },
 
   getUserById: (id: string) => {
-    const currentData = getData();
+    const currentData = loadDataFromFile();
     return currentData.users.find((user) => user.id === id);
   },
   
   getUsers: () => {
-    const currentData = getData();
+    const currentData = loadDataFromFile();
     return [...currentData.users].sort((a,b) => a.name.localeCompare(b.name))
   },
 
   addVoter: (name: string) => {
-    const currentData = getData();
+    const currentData = loadDataFromFile();
     if (currentData.users.find(u => u.name.toLowerCase() === name.toLowerCase())) {
         throw new Error('A voter with this name already exists.');
     }
     const newUser: User = {
-        id: generateUniqueId('user', currentData),
+        id: generateUniqueId('user'),
         name,
-        code: generateUniqueCode(currentData),
+        code: generateUniqueCode(),
         hasVoted: false,
     }
     currentData.users.push(newUser);
-    saveData(currentData);
+    saveData();
     return db.getUsers();
   },
 
   deleteVoter: (id: string) => {
-    const currentData = getData();
+    const currentData = loadDataFromFile();
     const userIndex = currentData.users.findIndex(u => u.id === id);
     if(userIndex === -1) {
         throw new Error('Voter not found.');
@@ -138,11 +136,11 @@ export const db = {
     // Also remove any votes by this user
     currentData.votes = currentData.votes.filter(v => v.voterId !== id);
     currentData.users.splice(userIndex, 1);
-    saveData(currentData);
+    saveData();
   },
 
   getCandidates: () => {
-    const currentData = getData();
+    const currentData = loadDataFromFile();
     const voteCounts: {[key: number]: number} = {};
     currentData.votes.forEach(vote => {
       voteCounts[vote.candidateId] = (voteCounts[vote.candidateId] || 0) + 1;
@@ -157,24 +155,24 @@ export const db = {
   },
   
   getPastWinners: () => {
-    const currentData = getData();
+    const currentData = loadDataFromFile();
     if (!currentData.pastWinners) {
       return [];
     }
-    return currentData.pastWinners.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return [...currentData.pastWinners].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   },
 
   addCandidate: (candidateData: Omit<Candidate, 'id' | 'voteCount'>) => {
-    const currentData = getData();
-    const newId = parseInt(generateUniqueId('candidate', currentData));
+    const currentData = loadDataFromFile();
+    const newId = parseInt(generateUniqueId('candidate'));
     const newCandidate: Candidate = { ...candidateData, id: newId, voteCount: 0 };
     currentData.candidates.push(newCandidate);
-    saveData(currentData);
+    saveData();
     return db.getCandidates();
   },
 
   deleteCandidate: (id: number) => {
-    const currentData = getData();
+    const currentData = loadDataFromFile();
     const candidateIndex = currentData.candidates.findIndex(c => c.id === id);
     if(candidateIndex === -1) {
         throw new Error('Candidate not found.');
@@ -182,11 +180,11 @@ export const db = {
      // Also remove any votes for this candidate
     currentData.votes = currentData.votes.filter(v => v.candidateId !== id);
     currentData.candidates.splice(candidateIndex, 1);
-    saveData(currentData);
+    saveData();
   },
   
   getElectionStatus: () => {
-    const currentData = getData();
+    const currentData = loadDataFromFile();
     const now = new Date();
     const start = currentData.electionStart ? new Date(currentData.electionStart) : null;
     const end = currentData.electionEnd ? new Date(currentData.electionEnd) : null;
@@ -201,6 +199,8 @@ export const db = {
       } else {
         status = 'active';
       }
+    } else if (currentData.electionEnd) { // Handle case where it's ended but no start time
+        status = 'ended';
     }
     
     return {
@@ -211,10 +211,10 @@ export const db = {
   },
 
   setElectionDates: (start: Date | null, end: Date | null) => {
-    const currentData = getData();
+    const currentData = loadDataFromFile();
     currentData.electionStart = start ? start.toISOString() : null;
     currentData.electionEnd = end ? end.toISOString() : null;
-    saveData(currentData);
+    saveData();
     return {
       start: currentData.electionStart ? new Date(currentData.electionStart) : null,
       end: currentData.electionEnd ? new Date(currentData.electionEnd) : null,
@@ -222,7 +222,7 @@ export const db = {
   },
 
   castVote: (voterId: string, candidateId: number) => {
-    let currentData = getData();
+    const currentData = loadDataFromFile();
     const electionStatus = db.getElectionStatus();
     if(electionStatus.status !== 'active') {
         return { success: false, message: 'The election is not currently active.' };
@@ -250,22 +250,22 @@ export const db = {
         timestamp: new Date(),
     }
     currentData.votes.push(newVote);
-    saveData(currentData);
+    saveData();
     return { success: true, message: 'Your vote has been successfully cast!' };
   },
   
   getTotalVotes: () => {
-    const currentData = getData();
+    const currentData = loadDataFromFile();
     return currentData.votes.length
   },
 
   getTotalVoters: () => {
-    const currentData = getData();
+    const currentData = loadDataFromFile();
     return currentData.users.length
   },
   
   endElection: () => {
-    const currentData = getData();
+    const currentData = loadDataFromFile();
     const now = new Date();
     const { start } = currentData;
     const electionStart = (start && new Date(start) < now) ? start : new Date(now.getTime() - 1000).toISOString();
@@ -288,15 +288,15 @@ export const db = {
         currentData.pastWinners.push(newWinnerRecord);
     }
     
-    saveData(currentData);
+    saveData();
   },
 
   resetVotes: () => {
-    const currentData = getData();
+    const currentData = loadDataFromFile();
     currentData.users.forEach(u => u.hasVoted = false);
     currentData.votes = [];
     currentData.electionStart = null;
     currentData.electionEnd = null;
-    saveData(currentData);
+    saveData();
   },
 };
