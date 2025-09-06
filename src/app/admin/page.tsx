@@ -7,12 +7,14 @@ export default async function AdminPage() {
   const candidates = db.getCandidates();
   const totalVotes = db.getTotalVotes();
   const voters = db.getUsers();
+  const electionStatus = db.getElectionStatus();
   
   return (
     <AdminDashboard 
       initialCandidates={candidates}
       initialTotalVotes={totalVotes}
       initialVoters={voters}
+      initialElectionStatus={electionStatus}
     />
   );
 }

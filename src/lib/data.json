@@ -1,5 +1,7 @@
 {
   "users": [],
   "candidates": [],
-  "votes": []
+  "votes": [],
+  "electionStart": null,
+  "electionEnd": null
 }

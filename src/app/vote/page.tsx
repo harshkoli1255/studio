@@ -5,19 +5,40 @@ import Logo from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { logout } from '@/lib/actions';
 import { LogOut } from 'lucide-react';
+import Link from 'next/link';
 
 export default async function VotePage() {
   const studentId = cookies().get('student-auth')?.value;
   const user = studentId ? db.getUserById(studentId) : null;
   const candidates = db.getCandidates();
   const totalVotes = db.getTotalVotes();
+  const electionStatus = db.getElectionStatus();
   
   if (!user) {
+    // This case should ideally be handled by middleware, but as a fallback:
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        Error: User not found. Please log in again.
+      <div className="flex min-h-screen items-center justify-center flex-col gap-4">
+        <p>Authentication error. Please log in again.</p>
+         <Link href="/">
+            <Button variant="outline">Go to Login</Button>
+         </Link>
       </div>
     );
+  }
+
+  if (electionStatus.status !== 'active' && !user.hasVoted) {
+     return (
+       <div className="flex min-h-screen items-center justify-center flex-col gap-4 p-4 text-center">
+         <Logo/>
+         <h1 className="text-2xl font-bold mt-4">The election is not currently active.</h1>
+         <p className="text-muted-foreground">
+            {electionStatus.status === 'upcoming' && `It is scheduled to start on ${electionStatus.start?.toLocaleString()}.`}
+            {electionStatus.status === 'ended' && `It ended on ${electionStatus.end?.toLocaleString()}.`}
+            {electionStatus.status === 'not_set' && 'The election dates have not been set by the administrator yet.'}
+         </p>
+         <p className="text-sm text-muted-foreground">Please check back later.</p>
+       </div>
+     );
   }
 
   return (

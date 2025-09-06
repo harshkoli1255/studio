@@ -10,19 +10,32 @@ interface AppData {
   users: User[];
   candidates: Candidate[];
   votes: Vote[];
+  electionStart: string | null;
+  electionEnd: string | null;
 }
 
 let data: AppData = {
   users: [],
   candidates: [],
   votes: [],
+  electionStart: null,
+  electionEnd: null,
 };
 
 function loadData(): void {
   try {
     if (fs.existsSync(dataPath)) {
       const fileContent = fs.readFileSync(dataPath, 'utf-8');
-      data = JSON.parse(fileContent);
+      const parsedData = JSON.parse(fileContent);
+      // Ensure all fields are present, providing defaults if not
+      data = {
+        users: [],
+        candidates: [],
+        votes: [],
+        electionStart: null,
+        electionEnd: null,
+        ...parsedData
+      };
     } else {
       saveData();
     }
@@ -92,7 +105,7 @@ export const db = {
     }
     data.users.push(newUser);
     saveData();
-    return newUser;
+    return db.getUsers();
   },
 
   deleteVoter: (id: string) => {
@@ -105,7 +118,8 @@ export const db = {
   },
 
   getCandidates: () => {
-    return [...data.candidates].sort((a,b) => a.id - b.id);
+    const newId = data.candidates.length > 0 ? Math.max(...data.candidates.map(c => c.id)) + 1 : 1;
+    return [...data.candidates].sort((a,b) => b.voteCount - a.voteCount);
   },
 
   addCandidate: (candidateData: Omit<Candidate, 'id' | 'voteCount'>) => {
@@ -113,18 +127,60 @@ export const db = {
     const newCandidate: Candidate = { ...candidateData, id: newId, voteCount: 0 };
     data.candidates.push(newCandidate);
     saveData();
-    return newCandidate;
+    return db.getCandidates();
+  },
+  
+  getElectionStatus: () => {
+    const now = new Date();
+    const start = data.electionStart ? new Date(data.electionStart) : null;
+    const end = data.electionEnd ? new Date(data.electionEnd) : null;
+    
+    let status: 'upcoming' | 'active' | 'ended' | 'not_set' = 'not_set';
+    
+    if (start && end) {
+      if (now < start) {
+        status = 'upcoming';
+      } else if (now > end) {
+        status = 'ended';
+      } else {
+        status = 'active';
+      }
+    }
+    
+    return {
+      status,
+      start,
+      end
+    };
+  },
+
+  setElectionDates: (start: Date | null, end: Date | null) => {
+    data.electionStart = start ? start.toISOString() : null;
+    data.electionEnd = end ? end.toISOString() : null;
+    saveData();
+    return {
+      start: data.electionStart,
+      end: data.electionEnd
+    }
   },
 
   castVote: (voterId: string, candidateId: number) => {
+    const electionStatus = db.getElectionStatus();
+    if(electionStatus.status !== 'active') {
+        return { success: false, message: 'The election is not currently active.' };
+    }
+    
     const user = db.getUserById(voterId);
-    if (!user || user.hasVoted) {
-      return false;
+    if (!user) {
+      return { success: false, message: 'Invalid user.' };
+    }
+    if (user.hasVoted) {
+      return { success: false, message: 'You have already voted.' };
     }
 
     const candidate = data.candidates.find(c => c.id === candidateId);
     if (!candidate) {
-      return false;
+      return { success: false, message: 'Invalid candidate.' };
     }
 
     user.hasVoted = true;
@@ -137,7 +193,7 @@ export const db = {
     }
     data.votes.push(newVote);
     saveData();
-    return true;
+    return { success: true, message: 'Your vote has been successfully cast!' };
   },
 
   getVoteCounts: () => {

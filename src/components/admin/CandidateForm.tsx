@@ -11,12 +11,6 @@ import { Plus, Upload, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Candidate } from '@/lib/types';
 import Image from 'next/image';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -47,11 +41,10 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
         formRef.current?.reset();
         setImagePreview(null);
         onCandidateAdded(state.candidates);
-        setLastActionId(state.actionId);
       } else if (state.message) {
         toast({ title: 'Error', description: state.message, variant: 'destructive' });
-        setLastActionId(state.actionId);
       }
+      setLastActionId(state.actionId);
     }
   }, [state, toast, onCandidateAdded, lastActionId]);
   
@@ -76,54 +69,45 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
   }
 
   return (
-    <Accordion type="single" collapsible className="w-full">
-      <AccordionItem value="add-candidate">
-        <AccordionTrigger>
-           <h3 className="text-lg font-medium">Add New Candidate</h3>
-        </AccordionTrigger>
-        <AccordionContent>
-            <form ref={formRef} action={formAction} className="space-y-4 pt-4">
-               <div className="space-y-2">
-                <Label htmlFor="image">Candidate Image</Label>
-                <div className="flex items-center gap-4">
-                  <div className="w-24 h-24 rounded-full border border-dashed flex items-center justify-center bg-muted overflow-hidden">
-                    {imagePreview ? (
-                      <Image src={imagePreview} alt="Candidate preview" width={96} height={96} className="object-cover w-full h-full"/>
-                    ) : (
-                      <ImageIcon className="text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex-1 space-y-2">
-                     <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
-                        <Upload className="mr-2"/>
-                        Upload Image
-                     </Button>
-                     <Input type="file" name="image" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept="image/*" />
-                     <div className="relative flex items-center">
-                        <div className="flex-grow border-t border-muted"></div>
-                        <span className="flex-shrink mx-2 text-xs text-muted-foreground">OR</span>
-                        <div className="flex-grow border-t border-muted"></div>
-                     </div>
-                     <Input name="imageUrl" placeholder="Enter Image URL" onChange={handleUrlChange} />
-                  </div>
+      <form ref={formRef} action={formAction} className="space-y-4 pt-4">
+          <div className="space-y-2">
+          <Label htmlFor="image">Candidate Image</Label>
+          <div className="flex items-center gap-4">
+            <div className="w-24 h-24 rounded-full border-2 border-dashed flex items-center justify-center bg-muted overflow-hidden">
+              {imagePreview ? (
+                <Image src={imagePreview} alt="Candidate preview" width={96} height={96} className="object-cover w-full h-full"/>
+              ) : (
+                <ImageIcon className="text-muted-foreground" />
+              )}
+            </div>
+            <div className="flex-1 space-y-2">
+                <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
+                  <Upload className="mr-2"/>
+                  Upload Image
+                </Button>
+                <Input type="file" name="image" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept="image/*" />
+                <div className="relative flex items-center">
+                  <div className="flex-grow border-t border-muted"></div>
+                  <span className="flex-shrink mx-2 text-xs text-muted-foreground">OR</span>
+                  <div className="flex-grow border-t border-muted"></div>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="name">Candidate Name</Label>
-                <Input id="name" name="name" placeholder="e.g., Jane Doe" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="bio">Short Bio</Label>
-                <Textarea id="bio" name="bio" placeholder="A short, compelling bio..." required />
-              </div>
-               <div className="space-y-2">
-                <Label htmlFor="dataAiHint">AI Image Hint (for placeholders)</Label>
-                <Input id="dataAiHint" name="dataAiHint" placeholder="e.g. man portrait" />
-              </div>
-              <SubmitButton />
-            </form>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+                <Input name="imageUrl" placeholder="Enter Image URL" onChange={handleUrlChange} />
+            </div>
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="name">Candidate Name</Label>
+          <Input id="name" name="name" placeholder="e.g., Jane Doe" required />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="bio">Short Bio</Label>
+          <Textarea id="bio" name="bio" placeholder="A short, compelling bio..." required />
+        </div>
+          <div className="space-y-2">
+          <Label htmlFor="dataAiHint">AI Image Hint (for placeholders)</Label>
+          <Input id="dataAiHint" name="dataAiHint" placeholder="e.g. man portrait" />
+        </div>
+        <SubmitButton />
+      </form>
   );
 }

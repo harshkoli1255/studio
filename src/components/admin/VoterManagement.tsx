@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { addVoter, deleteVoter } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Trash2 } from 'lucide-react';
+import { ScrollArea } from '../ui/scroll-area';
 
 interface VoterManagementProps {
   voters: User[];
@@ -21,7 +22,7 @@ interface VoterManagementProps {
 function AddVoterSubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending}>
+    <Button type="submit" disabled={pending} className="w-full sm:w-auto">
       <Plus className="mr-2" />
       {pending ? 'Adding Voter...' : 'Add Voter'}
     </Button>
@@ -42,7 +43,7 @@ function DeleteVoterButton({ voterId, onVoterDeleted }: { voterId: string, onVot
 
     return (
         <Button variant="ghost" size="icon" onClick={handleClick} disabled={pending}>
-            <Trash2 className="text-destructive"/>
+            <Trash2 className="text-destructive h-4 w-4"/>
         </Button>
     )
 }
@@ -60,33 +61,35 @@ export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }
         toast({ title: 'Success', description: state.message });
         formRef.current?.reset();
         onVoterAdded(state.voters);
-        setLastActionId(state.actionId);
       } else if (state.message) {
         toast({ title: 'Error', description: state.message, variant: 'destructive' });
-        setLastActionId(state.actionId);
       }
+      setLastActionId(state.actionId);
     }
   }, [state, toast, onVoterAdded, lastActionId]);
 
   return (
-    <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>Add New Voter</CardTitle>
-          <CardDescription>
-            A unique 8-character voting code will be automatically generated.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form ref={formRef} action={formAction} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="voterName">Voter Name</Label>
-              <Input id="voterName" name="voterName" placeholder="e.g., John Doe" required />
-            </div>
-            <AddVoterSubmitButton />
-          </form>
-        </CardContent>
-      </Card>
+    <div className="grid gap-4 md:gap-8 lg:grid-cols-5 mt-4">
+      <div className="lg:col-span-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Add New Voter</CardTitle>
+            <CardDescription>
+              A unique 8-character voting code will be automatically generated.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form ref={formRef} action={formAction} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="voterName">Voter Name</Label>
+                <Input id="voterName" name="voterName" placeholder="e.g., John Doe" required />
+              </div>
+              <AddVoterSubmitButton />
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+      <div className="lg:col-span-3">
       <Card>
         <CardHeader>
           <CardTitle>Voter List</CardTitle>
@@ -95,7 +98,7 @@ export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="max-h-[400px] overflow-y-auto">
+          <ScrollArea className="h-[400px]">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -120,16 +123,17 @@ export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }
                 ))}
                  {voters.length === 0 && (
                     <TableRow>
-                        <TableCell colSpan={4} className="text-center text-muted-foreground">
+                        <TableCell colSpan={4} className="text-center text-muted-foreground py-10">
                             No voters have been added yet.
                         </TableCell>
                     </TableRow>
                 )}
               </TableBody>
             </Table>
-          </div>
+          </ScrollArea>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

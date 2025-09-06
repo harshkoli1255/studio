@@ -19,6 +19,11 @@ const loginSchema = z.object({
 });
 
 export async function studentLogin(prevState: any, formData: FormData) {
+  const electionStatus = db.getElectionStatus();
+  if (electionStatus.status !== 'active') {
+    return { message: `The election is ${electionStatus.status.replace('_', ' ')}.` };
+  }
+  
   const parsed = loginSchema.safeParse({
     name: formData.get('name'),
     code: formData.get('code'),
@@ -35,7 +40,9 @@ export async function studentLogin(prevState: any, formData: FormData) {
   }
 
   if (user.hasVoted) {
-    return { message: 'This voting code has already been used.' };
+    // This is a soft redirect, the middleware will handle the hard redirect
+    // but it provides a slightly better UX for users who have already voted.
+    redirect('/vote');
   }
   
   cookies().set(STUDENT_COOKIE, user.id, {
@@ -93,18 +100,8 @@ export async function castVote(candidateId: number) {
   if (!studentId) {
     return { success: false, message: 'Authentication failed. Please log in again.' };
   }
-
-  const user = db.getUserById(studentId);
-  if (user?.hasVoted) {
-    return { success: false, message: 'You have already cast your vote.' };
-  }
-
-  const success = db.castVote(studentId, candidateId);
-  if (success) {
-    return { success: true, message: 'Your vote has been cast successfully!' };
-  }
-
-  return { success: false, message: 'An error occurred while casting your vote.' };
+  
+  return db.castVote(studentId, candidateId);
 }
 
 const imageFileSchema = z.instanceof(File).refine(file => file.size > 0, 'Image is required.').refine(file => file.size < 4 * 1024 * 1024, 'Image must be less than 4MB.').refine(file => file.type.startsWith('image/'), 'File must be an image.');
@@ -154,14 +151,13 @@ export async function addCandidate(prevState: any, formData: FormData): Promise<
         return { success: false, message: "An image is required.", candidates: null, actionId };
     }
 
-    db.addCandidate({
+    const updatedCandidates = db.addCandidate({
         name: parsed.data.name,
         bio: parsed.data.bio,
         imageUrl: finalImageUrl,
         dataAiHint: parsed.data.dataAiHint,
     });
     
-    const updatedCandidates = db.getCandidates();
     return { success: true, message: 'Candidate added successfully.', candidates: updatedCandidates, actionId };
 }
 
@@ -211,8 +207,7 @@ export async function addVoter(prevState: any, formData: FormData): Promise<{suc
     }
 
     try {
-        db.addVoter(parsed.data.voterName);
-        const updatedVoters = db.getUsers();
+        const updatedVoters = db.addVoter(parsed.data.voterName);
         return { success: true, message: 'Voter added successfully.', voters: updatedVoters, actionId };
     } catch(e: any) {
         return { success: false, message: e.message, voters: null, actionId };
@@ -226,4 +221,12 @@ export async function deleteVoter(voterId: string) {
     } catch (e: any) {
         return { success: false, message: e.message };
     }
+}
+
+export async function setElectionSchedule(start: Date | null, end: Date | null) {
+  if (start && end && start >= end) {
+    return { success: false, message: "Start date must be before the end date." };
+  }
+  const dates = db.setElectionDates(start, end);
+  return { success: true, message: "Election schedule updated successfully.", ...dates };
 }
