@@ -133,10 +133,12 @@ export const db = {
     let skippedCount = 0;
 
     votersToAdd.forEach(voter => {
-      const nameExists = currentData.users.some(u => u.name.toLowerCase() === voter.name.toLowerCase());
-      const codeExists = currentData.users.some(u => u.code.toUpperCase() === voter.code.toUpperCase());
+      const alreadyExists = currentData.users.some(u => 
+        u.name.toLowerCase() === voter.name.toLowerCase() && 
+        u.code.toUpperCase() === voter.code.toUpperCase()
+      );
 
-      if (nameExists || codeExists) {
+      if (alreadyExists) {
         skippedCount++;
       } else {
         const newUser: User = {
