@@ -26,22 +26,25 @@ function loadData(): void {
   try {
     if (fs.existsSync(dataPath)) {
       const fileContent = fs.readFileSync(dataPath, 'utf-8');
-      const parsedData = JSON.parse(fileContent);
-      // Ensure all fields are present, providing defaults if not
-      data = {
-        users: [],
-        candidates: [],
-        votes: [],
-        electionStart: null,
-        electionEnd: null,
-        ...parsedData
-      };
+      // Avoid parsing empty files
+      if (fileContent) {
+        const parsedData = JSON.parse(fileContent);
+         data = {
+           users: [],
+           candidates: [],
+           votes: [],
+           electionStart: null,
+           electionEnd: null,
+           ...parsedData,
+         };
+      }
     } else {
+      // If file doesn't exist, create it with default empty state
       saveData();
     }
   } catch (error) {
     console.error('Error loading data:', error);
-    saveData(); // Create the file if it's corrupted or unreadable
+    // If there's an error, we avoid overwriting a potentially good file
   }
 }
 
@@ -118,12 +121,11 @@ export const db = {
   },
 
   getCandidates: () => {
-    const newId = data.candidates.length > 0 ? Math.max(...data.candidates.map(c => c.id)) + 1 : 1;
     return [...data.candidates].sort((a,b) => b.voteCount - a.voteCount);
   },
 
   addCandidate: (candidateData: Omit<Candidate, 'id' | 'voteCount'>) => {
-    const newId = data.candidates.length > 0 ? Math.max(...data.candidates.map(c => c.id)) + 1 : 1;
+    const newId = data.candidates.length > 0 ? Math.max(...data.candidates.map(c => c.id), 0) + 1 : 1;
     const newCandidate: Candidate = { ...candidateData, id: newId, voteCount: 0 };
     data.candidates.push(newCandidate);
     saveData();
@@ -159,8 +161,8 @@ export const db = {
     data.electionEnd = end ? end.toISOString() : null;
     saveData();
     return {
-      start: data.electionStart,
-      end: data.electionEnd
+      start: data.electionStart ? new Date(data.electionStart) : null,
+      end: data.electionEnd ? new Date(data.electionEnd) : null,
     }
   },
 
@@ -186,7 +188,7 @@ export const db = {
     user.hasVoted = true;
     candidate.voteCount += 1;
     const newVote: Vote = {
-        id: data.votes.length + 1,
+        id: data.votes.length > 0 ? Math.max(...data.votes.map(v => v.id), 0) + 1 : 1,
         voterId,
         candidateId,
         timestamp: new Date(),
@@ -209,9 +211,11 @@ export const db = {
   getTotalVoters: () => data.users.length,
 
   resetVotes: () => {
-    data.candidates = data.candidates.map(c => ({ ...c, voteCount: 0 }));
-    data.users = data.users.map(u => ({ ...u, hasVoted: false }));
+    data.candidates.forEach(c => c.voteCount = 0);
+    data.users.forEach(u => u.hasVoted = false);
     data.votes = [];
+    data.electionStart = null;
+    data.electionEnd = null;
     saveData();
   },
 };
