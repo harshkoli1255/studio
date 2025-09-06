@@ -194,9 +194,9 @@ export async function addVoter(formData: FormData): Promise<{success: boolean, m
   }
 }
 
-export async function addBulkVoters(votersData: ParseVotersOutput) {
+export async function addBulkVoters(votersData: ParseVotersOutput['voters']) {
     try {
-        const {voters: updatedVoters, addedCount, skippedCount} = db.addVoters(votersData.voters);
+        const {voters: updatedVoters, addedCount, skippedCount} = db.addVoters(votersData);
         return { success: true, message: `${addedCount} voters added.`, voters: updatedVoters, addedCount, skippedCount };
     } catch(e: any) {
         return { success: false, message: "An error occurred while adding voters.", voters: null, addedCount: 0, skippedCount: 0 };
@@ -270,6 +270,10 @@ export async function endElectionNow() {
 }
 
 export async function resetVotes() {
-  db.resetVotes();
-  return { message: 'All votes have been reset.' };
+  try {
+    db.resetVotes();
+    return { success: true, message: 'All votes have been reset.' };
+  } catch (e: any) {
+    return { success: false, message: 'Could not reset votes.' };
+  }
 }

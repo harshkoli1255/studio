@@ -69,9 +69,13 @@ export default function AdminDashboard({
   const leadingCandidate = candidates.length > 0 ? [...candidates].sort((a,b) => b.voteCount - a.voteCount)[0]?.name || 'N/A' : 'N/A';
 
   const handleReset = async () => {
-      await resetVotes();
-      window.location.reload();
-      toast({ title: 'Success', description: 'The election has been fully reset.' });
+      const result = await resetVotes();
+      if (result.success) {
+        window.location.reload();
+        toast({ title: 'Success', description: 'The election has been fully reset.' });
+      } else {
+        toast({ title: 'Error', description: result.message, variant: 'destructive' });
+      }
   };
 
   const onCandidateAdded = (updatedCandidates: Candidate[]) => {
