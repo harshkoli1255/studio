@@ -29,11 +29,11 @@ const prompt = ai.definePrompt({
   name: 'parseVotersPrompt',
   input: { schema: z.string() },
   output: { schema: ParseVotersOutputSchema },
-  prompt: `You are an expert data processor. Your task is to parse the provided CSV data and extract voter information.
+  prompt: `You are an expert data processor. Your task is to parse the provided CSV data and extract voter information into a JSON object with a single key "voters" which contains an array of voter objects.
 
 The CSV data will have two columns. One column is for the voter's full name, and the other is for their secret voting code. The columns might not be in a consistent order, and the headers might have different names (e.g., "Student Name", "Name", "Voter"; "Code", "Secret", "PIN").
 
-Your job is to automatically identify which column corresponds to the name and which to the code, and then extract all the rows into a structured JSON array.
+Your job is to automatically identify which column corresponds to the name and which to the code, and then extract all the rows into the structured JSON array.
 
 Here is the CSV data:
 {{{input}}}
@@ -51,6 +51,6 @@ const parseVotersFlow = ai.defineFlow(
     if (!output || !output.voters) {
       return { voters: [] };
     }
-    return { voters: output.voters };
+    return output;
   }
 );

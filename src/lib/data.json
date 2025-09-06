@@ -1,24 +1,5 @@
 {
-  "users": [
-    {
-      "id": "2975187a-a2fd-4ff7-9f8f-1c4c7283d23b",
-      "name": "Harsh Koli",
-      "code": "01CD8BC7",
-      "hasVoted": false
-    },
-    {
-      "id": "16445b2b-d441-44c5-99eb-c28ece8d2f2b",
-      "name": "Kartik Upadhyay",
-      "code": "A6D62E58",
-      "hasVoted": true
-    },
-    {
-      "id": "76281f4c-7fef-4eea-b342-41b59c6e530d",
-      "name": "ayush",
-      "code": "C4F471A7",
-      "hasVoted": true
-    }
-  ],
+  "users": [],
   "candidates": [
     {
       "name": "Sarthak Thakur",
@@ -37,20 +18,7 @@
       "voteCount": 0
     }
   ],
-  "votes": [
-    {
-      "id": 1,
-      "voterId": "76281f4c-7fef-4eea-b342-41b59c6e530d",
-      "candidateId": 2,
-      "timestamp": "2025-09-06T19:22:31.296Z"
-    },
-    {
-      "id": 2,
-      "voterId": "16445b2b-d441-44c5-99eb-c28ece8d2f2b",
-      "candidateId": 2,
-      "timestamp": "2025-09-06T19:24:14.924Z"
-    }
-  ],
+  "votes": [],
   "pastWinners": [
     {
       "date": "2025-09-06T19:27:36.052Z",
