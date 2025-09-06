@@ -33,7 +33,7 @@ export async function studentLogin(prevState: any, formData: FormData) {
     return { message: parsed.error.errors[0].message };
   }
 
-  const user = db.getUserByNameAndCode(parsed.data.name, parsed.data.code);
+  const user = db.getUserByNameAndCode(parsed.data.name, parsed.data.code.toUpperCase());
 
   if (!user) {
     return { message: 'Invalid name or voting code.' };
@@ -42,6 +42,12 @@ export async function studentLogin(prevState: any, formData: FormData) {
   if (user.hasVoted) {
     // This is a soft redirect, the middleware will handle the hard redirect
     // but it provides a slightly better UX for users who have already voted.
+     cookies().set(STUDENT_COOKIE, user.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 60 * 60 * 24, // 1 day
+      path: '/',
+    });
     redirect('/vote');
   }
   

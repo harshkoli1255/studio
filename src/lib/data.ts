@@ -20,31 +20,23 @@ function loadData(): void {
   try {
     if (fs.existsSync(dataPath)) {
       const fileContent = fs.readFileSync(dataPath, 'utf-8');
-      // Avoid parsing empty files
-      if (fileContent) {
+      if (fileContent.trim()) {
         data = JSON.parse(fileContent);
         return;
       }
     }
-    // If file doesn't exist or is empty, create it with default empty state
-    data = {
-      users: [],
-      candidates: [],
-      votes: [],
-      electionStart: null,
-      electionEnd: null,
-    };
-    saveData();
   } catch (error) {
-    console.error('Error loading data:', error);
-     data = {
-      users: [],
-      candidates: [],
-      votes: [],
-      electionStart: null,
-      electionEnd: null,
-    };
+    console.error('Error loading or parsing data, initializing with empty state:', error);
   }
+  
+  data = {
+    users: [],
+    candidates: [],
+    votes: [],
+    electionStart: null,
+    electionEnd: null,
+  };
+  saveData();
 }
 
 function saveData(): void {
@@ -55,7 +47,6 @@ function saveData(): void {
   }
 }
 
-// Load data on initial startup
 loadData();
 
 
@@ -92,7 +83,7 @@ function generateUniqueId(type: 'user' | 'candidate') {
 
 export const db = {
   getUserByNameAndCode: (name: string, code: string) => {
-    return data.users.find((user) => user.name.toLowerCase() === name.toLowerCase() && user.code.toLowerCase() === code.toLowerCase());
+    return data.users.find((user) => user.name.toLowerCase() === name.toLowerCase() && user.code === code);
   },
 
   getUserById: (id: string) => {
