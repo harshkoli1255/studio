@@ -247,3 +247,16 @@ export async function setElectionSchedule(start: Date | null, end: Date | null) 
   const dates = db.setElectionDates(start, end);
   return { success: true, message: "Election schedule updated successfully.", ...dates };
 }
+
+export async function endElectionNow() {
+  try {
+    const now = new Date();
+    const { start } = db.getElectionStatus();
+    // If start is in the future or not set, set it to a moment ago.
+    const electionStart = (start && start < now) ? start : new Date(now.getTime() - 1000);
+    db.setElectionDates(electionStart, now);
+    return { success: true, message: "Election has been ended." };
+  } catch (e: any) {
+    return { success: false, message: "Could not end the election." };
+  }
+}

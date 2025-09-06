@@ -19,7 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from '../ui/card';
-import { setElectionSchedule } from '@/lib/actions';
+import { setElectionSchedule, endElectionNow } from '@/lib/actions';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 
@@ -81,6 +81,25 @@ export default function ElectionTimer({ initialStatus }: ElectionTimerProps) {
     }
     setIsLoading(false);
   };
+  
+  const handleEndElection = async () => {
+    setIsLoading(true);
+    const result = await endElectionNow();
+    if (result.success) {
+      toast({
+        title: 'Success!',
+        description: 'The election has been ended. Displaying results.',
+      });
+      window.location.reload();
+    } else {
+      toast({
+        title: 'Error',
+        description: result.message,
+        variant: 'destructive',
+      });
+    }
+    setIsLoading(false);
+  }
 
   return (
     <Card>
@@ -169,6 +188,19 @@ export default function ElectionTimer({ initialStatus }: ElectionTimerProps) {
           className="w-full"
         >
           {isLoading ? 'Saving...' : 'Save Schedule'}
+        </Button>
+         <div className="relative flex items-center">
+          <div className="flex-grow border-t border-muted"></div>
+          <span className="flex-shrink mx-2 text-xs text-muted-foreground">OR</span>
+          <div className="flex-grow border-t border-muted"></div>
+        </div>
+        <Button
+          onClick={handleEndElection}
+          disabled={isLoading || initialStatus.status === 'ended'}
+          variant="secondary"
+          className="w-full"
+        >
+          {isLoading ? 'Ending...' : 'End Election Now & Show Results'}
         </Button>
       </CardContent>
     </Card>
