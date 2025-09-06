@@ -90,21 +90,21 @@ export async function studentLogin(prevState: any, formData: FormData): Promise<
   }
 
   if (electionStatus.status !== 'active') {
-    return { success: false, message: `The election is ${electionStatus.status.replace('_', ' ')}.` };
+     return { success: true, message: `The election is ${electionStatus.status.replace('_', ' ')}. Redirecting to vote...`, redirectTo: '/vote' };
   }
   
   return { success: true, message: 'Login successful. Redirecting to vote...', redirectTo: '/vote' };
 }
 
-export async function adminLogin(prevState: any, formData: FormData) {
+export async function adminLogin(prevState: any, formData: FormData): Promise<{ success: boolean, message: string }> {
   const parsed = adminLoginSchema.safeParse(Object.fromEntries(formData));
 
   if (!parsed.success) {
-    return { message: parsed.error.errors[0].message };
+    return { success: false, message: parsed.error.errors[0].message };
   }
   
   if (parsed.data.username !== ADMIN_USERNAME || parsed.data.password !== ADMIN_PASSWORD) {
-    return { message: 'Incorrect username or password.' };
+    return { success: false, message: 'Incorrect username or password.' };
   }
 
   cookies().set(ADMIN_COOKIE, 'true', {
@@ -191,8 +191,9 @@ export async function addVoter(formData: FormData) {
   }
 }
 
-export async function addBulkVoters(voterNames: string[]) {
+export async function addBulkVoters(voters: {name: string}[]) {
     try {
+        const voterNames = voters.map(v => v.name);
         const {voters: updatedVoters, addedCount, skippedCount} = db.addVoters(voterNames);
         return { success: true, message: `${addedCount} voters added.`, voters: updatedVoters, addedCount, skippedCount };
     } catch(e: any) {
