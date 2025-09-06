@@ -39,7 +39,8 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
   const { toast } = useToast();
   
   useEffect(() => {
-    generateRandomImage();
+    // Generate the random number only on the client-side
+    setRandomImage(`https://picsum.photos/400/400?random=${Math.random()}`);
   }, []);
 
   useEffect(() => {
@@ -65,7 +66,7 @@ export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) 
   }, [state, toast, onCandidateAdded]);
 
   const generateRandomImage = () => {
-    setRandomImage(`https://picsum.photos/400/400?random=${Date.now()}`);
+    setRandomImage(`https://picsum.photos/400/400?random=${Math.random()}`);
   }
 
   return (
