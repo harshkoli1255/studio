@@ -1,14 +1,11 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { db } from '@/lib/data';
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isAdminAuth = request.cookies.has('admin-auth');
-  const studentAuthCookie = request.cookies.get('student-auth');
-  const studentId = studentAuthCookie?.value;
-  const isStudentAuth = !!studentId && !!db.getUserById(studentId);
+  const isStudentAuth = request.cookies.has('student-auth');
 
   // Protect /admin routes
   if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
@@ -28,7 +25,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/', request.url));
     }
   }
-  
+
   // Redirect logged-in student from login page
   if (pathname === '/' && isStudentAuth) {
     return NextResponse.redirect(new URL('/vote', request.url));
