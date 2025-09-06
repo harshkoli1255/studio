@@ -40,14 +40,23 @@ const prompt = ai.definePrompt({
   name: 'summarizeVoteResultsPrompt',
   input: {schema: SummarizeVoteResultsInputSchema},
   output: {schema: SummarizeVoteResultsOutputSchema},
-  prompt: `Summarize the vote results into key insights for the admin.
+  prompt: `You are an election analyst. Your task is to provide a concise summary of the current election results based on the data provided.
 
-  Include the leading candidate and their percentage of votes.
-  Include the voter turnout percentage.
+Analyze the following data:
+- Candidate Results: {{jsonStringify candidateResults}}
+- Total Votes Cast: {{totalVotes}}
+- Total Eligible Voters: {{totalVoters}}
 
-  Candidate Results: {{{candidateResults}}}
-  Total Votes: {{{totalVotes}}}
-  Total Voters: {{{totalVoters}}}
+Based on this data, generate a one-paragraph summary.
+- If there are no votes, state that the election has just begun and no votes have been cast.
+- Otherwise, calculate the voter turnout percentage (Total Votes Cast / Total Eligible Voters).
+- Identify the leading candidate(s). If there's a tie, mention it.
+- State the leading candidate's name and their percentage of the total vote.
+- Keep the summary brief, professional, and to the point.
+
+Example for a single leader: "Voter turnout is at 50.0%. The leading candidate is Jane Doe with 60.0% of the vote."
+Example for a tie: "Voter turnout is at 75.0%. There is currently a tie between John Smith and Jane Doe, each with 50.0% of the vote."
+Example for no votes: "The election is underway, but no votes have been cast yet."
   `,
 });
 
@@ -58,6 +67,9 @@ const summarizeVoteResultsFlow = ai.defineFlow(
     outputSchema: SummarizeVoteResultsOutputSchema,
   },
   async input => {
+    if (input.candidateResults.length === 0) {
+      return { summary: "No candidates are in the race. Add candidates to see results." };
+    }
     const {output} = await prompt(input);
     return output!;
   }

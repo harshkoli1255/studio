@@ -200,11 +200,7 @@ export async function generateSummary() {
       voteCount: c.voteCount,
     }));
     const totalVotes = db.getTotalVotes();
-    const totalVoters = db.getTotalVoters();
-
-    if (totalVotes === 0) {
-      return { summary: 'No votes have been cast yet. The election is just getting started!' };
-    }
+    const totalVoters = db.getUsers().length;
 
     const result = await summarizeVoteResults({
       candidateResults,
