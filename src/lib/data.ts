@@ -67,7 +67,7 @@ function generateUniqueCode() {
   let code: string;
   let isUnique = false;
   while(!isUnique) {
-    code = crypto.randomBytes(4).toString('hex').toUpperCase();
+    code = crypto.randomUUID().slice(0, 8).toUpperCase();
     if(!currentData.users.find(u => u.code === code)) {
       isUnique = true;
     }
@@ -82,7 +82,7 @@ function generateUniqueId(type: 'user' | 'candidate') {
     if (type === 'user') {
       let isUnique = false;
       while(!isUnique) {
-        id = crypto.randomBytes(16).toString('hex');
+        id = crypto.randomUUID();
         if(!currentData.users.find(u => u.id === id)) {
           isUnique = true;
         }
