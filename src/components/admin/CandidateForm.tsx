@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { addCandidate } from '@/lib/actions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { cn } from '@/lib/utils';
 
 function SubmitButton() {
   const { pending } = useFormStatus();

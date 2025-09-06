@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState, useRef, useEffect, useState } from 'react';
+import { useActionState } from 'react';
+import { useRef, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
