@@ -1,5 +1,24 @@
 {
-  "users": [],
+  "users": [
+    {
+      "id": "148bf212-2bb2-45e7-9e1f-53c7e2967745",
+      "name": "Harsh Koli",
+      "code": "5D642B8E",
+      "hasVoted": false
+    },
+    {
+      "id": "5237d170-936c-4062-856c-88eb66e0bfb7",
+      "name": "Kartik Upadhyay",
+      "code": "7D7EE5F5",
+      "hasVoted": false
+    },
+    {
+      "id": "164fe54f-66db-4a98-85a6-ed46d2b78bf6",
+      "name": "ayush",
+      "code": "221625BA",
+      "hasVoted": false
+    }
+  ],
   "candidates": [
     {
       "name": "Sarthak Thakur",
@@ -33,5 +52,5 @@
     }
   ],
   "electionStart": "2025-09-06T19:16:00.000Z",
-  "electionEnd": "2025-09-06T19:27:36.052Z"
+  "electionEnd": "2025-09-06T21:27:00.000Z"
 }
