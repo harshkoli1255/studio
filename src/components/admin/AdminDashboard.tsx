@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BarChart, Users, Percent, Vote, Plus, RefreshCcw, LogOut } from 'lucide-react';
 import type { Candidate } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -23,11 +23,18 @@ export default function AdminDashboard({
   initialTotalVotes,
   initialTotalVoters,
 }: AdminDashboardProps) {
-  const [candidates, setCandidates] = useState(initialCandidates);
-  const [totalVotes, setTotalVotes] = useState(initialTotalVotes);
+  const [candidates, setCandidates] = useState<Candidate[]>([]);
+  const [totalVotes, setTotalVotes] = useState(0);
   const { toast } = useToast();
 
+  useEffect(() => {
+    setCandidates(initialCandidates);
+    setTotalVotes(initialTotalVotes);
+  }, [initialCandidates, initialTotalVotes]);
+
   const turnout = initialTotalVoters > 0 ? (totalVotes / initialTotalVoters) * 100 : 0;
+  
+  const leadingCandidate = candidates.length > 0 ? [...candidates].sort((a,b) => b.voteCount - a.voteCount)[0].name : 'N/A';
 
   const handleReset = async () => {
     if (confirm('Are you sure you want to reset all votes? This action cannot be undone.')) {
@@ -95,7 +102,7 @@ export default function AdminDashboard({
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                 {candidates.length > 0 ? [...candidates].sort((a,b) => b.voteCount - a.voteCount)[0].name : 'N/A'}
+                 {leadingCandidate}
               </div>
             </CardContent>
           </Card>
