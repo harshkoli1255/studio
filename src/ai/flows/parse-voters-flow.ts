@@ -5,7 +5,7 @@
  *
  * - parseVoters - A function that takes CSV data and returns parsed voter information.
  * - VoterDataSchema - The Zod schema for the output of an individual voter.
- * - ParseVotersOutputSchema - The Zod schema for the array of voters.
+ * - ParseVotersOutput - The Zod schema for the array of voters.
  */
 
 import { ai } from '@/ai/genkit';
