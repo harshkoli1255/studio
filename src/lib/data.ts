@@ -1,19 +1,55 @@
-// In-memory data store
+// In-memory data store with file persistence
 import type { Candidate, User, Vote } from '@/lib/types';
 import { randomBytes } from 'crypto';
+import fs from 'fs';
+import path from 'path';
 
-let users: User[] = [];
+const dataPath = path.join(process.cwd(), 'src', 'lib', 'data.json');
 
-let candidates: Candidate[] = [];
+interface AppData {
+  users: User[];
+  candidates: Candidate[];
+  votes: Vote[];
+}
 
-let votes: Vote[] = [];
+let data: AppData = {
+  users: [],
+  candidates: [],
+  votes: [],
+};
+
+function loadData(): void {
+  try {
+    if (fs.existsSync(dataPath)) {
+      const fileContent = fs.readFileSync(dataPath, 'utf-8');
+      data = JSON.parse(fileContent);
+    } else {
+      saveData();
+    }
+  } catch (error) {
+    console.error('Error loading data:', error);
+    saveData(); // Create the file if it's corrupted or unreadable
+  }
+}
+
+function saveData(): void {
+  try {
+    fs.writeFileSync(dataPath, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (error) {
+    console.error('Error saving data:', error);
+  }
+}
+
+// Load data on initial startup
+loadData();
+
 
 function generateUniqueCode() {
   let code: string;
   let isUnique = false;
   while(!isUnique) {
     code = randomBytes(4).toString('hex').toUpperCase();
-    if(!users.find(u => u.code === code)) {
+    if(!data.users.find(u => u.code === code)) {
       isUnique = true;
     }
   }
@@ -21,23 +57,31 @@ function generateUniqueCode() {
 }
 
 function generateUniqueId() {
-    return randomBytes(16).toString('hex');
+    let id: string;
+    let isUnique = false;
+    while(!isUnique) {
+      id = randomBytes(16).toString('hex');
+      if(!data.users.find(u => u.id === id)) {
+        isUnique = true;
+      }
+    }
+    return id!;
 }
 
 
 export const db = {
   getUserByNameAndCode: (name: string, code: string) => {
-    return users.find((user) => user.name.toLowerCase() === name.toLowerCase() && user.code.toLowerCase() === code.toLowerCase());
+    return data.users.find((user) => user.name.toLowerCase() === name.toLowerCase() && user.code.toLowerCase() === code.toLowerCase());
   },
 
   getUserById: (id: string) => {
-    return users.find((user) => user.id === id);
+    return data.users.find((user) => user.id === id);
   },
   
-  getUsers: () => users.sort((a,b) => a.name.localeCompare(b.name)),
+  getUsers: () => [...data.users].sort((a,b) => a.name.localeCompare(b.name)),
 
   addVoter: (name: string) => {
-    if (users.find(u => u.name.toLowerCase() === name.toLowerCase())) {
+    if (data.users.find(u => u.name.toLowerCase() === name.toLowerCase())) {
         throw new Error('A voter with this name already exists.');
     }
     const newUser: User = {
@@ -46,26 +90,29 @@ export const db = {
         code: generateUniqueCode(),
         hasVoted: false,
     }
-    users.push(newUser);
+    data.users.push(newUser);
+    saveData();
     return newUser;
   },
 
   deleteVoter: (id: string) => {
-    const userIndex = users.findIndex(u => u.id === id);
+    const userIndex = data.users.findIndex(u => u.id === id);
     if(userIndex === -1) {
         throw new Error('Voter not found.');
     }
-    users.splice(userIndex, 1);
+    data.users.splice(userIndex, 1);
+    saveData();
   },
 
   getCandidates: () => {
-    return candidates.sort((a,b) => a.id - b.id);
+    return [...data.candidates].sort((a,b) => a.id - b.id);
   },
 
   addCandidate: (candidateData: Omit<Candidate, 'id' | 'voteCount'>) => {
-    const newId = candidates.length > 0 ? Math.max(...candidates.map(c => c.id)) + 1 : 1;
+    const newId = data.candidates.length > 0 ? Math.max(...data.candidates.map(c => c.id)) + 1 : 1;
     const newCandidate: Candidate = { ...candidateData, id: newId, voteCount: 0 };
-    candidates.push(newCandidate);
+    data.candidates.push(newCandidate);
+    saveData();
     return newCandidate;
   },
 
@@ -75,7 +122,7 @@ export const db = {
       return false;
     }
 
-    const candidate = candidates.find(c => c.id === candidateId);
+    const candidate = data.candidates.find(c => c.id === candidateId);
     if (!candidate) {
       return false;
     }
@@ -83,30 +130,32 @@ export const db = {
     user.hasVoted = true;
     candidate.voteCount += 1;
     const newVote: Vote = {
-        id: votes.length + 1,
+        id: data.votes.length + 1,
         voterId,
         candidateId,
         timestamp: new Date(),
     }
-    votes.push(newVote);
+    data.votes.push(newVote);
+    saveData();
     return true;
   },
 
   getVoteCounts: () => {
-    return candidates.map(c => ({
+    return data.candidates.map(c => ({
       id: c.id,
       name: c.name,
       voteCount: c.voteCount,
     }));
   },
   
-  getTotalVotes: () => votes.length,
+  getTotalVotes: () => data.votes.length,
 
-  getTotalVoters: () => users.length,
+  getTotalVoters: () => data.users.length,
 
   resetVotes: () => {
-    candidates = candidates.map(c => ({ ...c, voteCount: 0 }));
-    users = users.map(u => ({ ...u, hasVoted: false }));
-    votes = [];
+    data.candidates = data.candidates.map(c => ({ ...c, voteCount: 0 }));
+    data.users = data.users.map(u => ({ ...u, hasVoted: false }));
+    data.votes = [];
+    saveData();
   },
 };
