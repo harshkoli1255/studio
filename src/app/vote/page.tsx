@@ -7,6 +7,8 @@ import { logout } from '@/lib/actions';
 import { LogOut } from 'lucide-react';
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default async function VotePage() {
   const cookieStore = cookies();
   const studentId = cookieStore.get('student-auth')?.value;
