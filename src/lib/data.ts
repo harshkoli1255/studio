@@ -14,13 +14,7 @@ interface AppData {
   electionEnd: string | null;
 }
 
-let data: AppData = {
-  users: [],
-  candidates: [],
-  votes: [],
-  electionStart: null,
-  electionEnd: null,
-};
+let data: AppData;
 
 function loadData(): void {
   try {
@@ -28,23 +22,28 @@ function loadData(): void {
       const fileContent = fs.readFileSync(dataPath, 'utf-8');
       // Avoid parsing empty files
       if (fileContent) {
-        const parsedData = JSON.parse(fileContent);
-         data = {
-           users: [],
-           candidates: [],
-           votes: [],
-           electionStart: null,
-           electionEnd: null,
-           ...parsedData,
-         };
+        data = JSON.parse(fileContent);
+        return;
       }
-    } else {
-      // If file doesn't exist, create it with default empty state
-      saveData();
     }
+    // If file doesn't exist or is empty, create it with default empty state
+    data = {
+      users: [],
+      candidates: [],
+      votes: [],
+      electionStart: null,
+      electionEnd: null,
+    };
+    saveData();
   } catch (error) {
     console.error('Error loading data:', error);
-    // If there's an error, we avoid overwriting a potentially good file
+     data = {
+      users: [],
+      candidates: [],
+      votes: [],
+      electionStart: null,
+      electionEnd: null,
+    };
   }
 }
 
@@ -72,14 +71,20 @@ function generateUniqueCode() {
   return code!;
 }
 
-function generateUniqueId() {
+function generateUniqueId(type: 'user' | 'candidate') {
     let id: string;
     let isUnique = false;
-    while(!isUnique) {
-      id = randomBytes(16).toString('hex');
-      if(!data.users.find(u => u.id === id)) {
-        isUnique = true;
+
+    if (type === 'user') {
+      while(!isUnique) {
+        id = randomBytes(16).toString('hex');
+        if(!data.users.find(u => u.id === id)) {
+          isUnique = true;
+        }
       }
+    } else { // candidate
+        const maxId = data.candidates.length > 0 ? Math.max(...data.candidates.map(c => c.id), 0) : 0;
+        id = (maxId + 1).toString();
     }
     return id!;
 }
@@ -101,7 +106,7 @@ export const db = {
         throw new Error('A voter with this name already exists.');
     }
     const newUser: User = {
-        id: generateUniqueId(),
+        id: generateUniqueId('user'),
         name,
         code: generateUniqueCode(),
         hasVoted: false,
@@ -125,7 +130,7 @@ export const db = {
   },
 
   addCandidate: (candidateData: Omit<Candidate, 'id' | 'voteCount'>) => {
-    const newId = data.candidates.length > 0 ? Math.max(...data.candidates.map(c => c.id), 0) + 1 : 1;
+    const newId = parseInt(generateUniqueId('candidate'));
     const newCandidate: Candidate = { ...candidateData, id: newId, voteCount: 0 };
     data.candidates.push(newCandidate);
     saveData();
