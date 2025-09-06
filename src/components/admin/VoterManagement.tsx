@@ -1,7 +1,6 @@
 'use client';
 
-import { useActionState } from 'react';
-import { useRef, useEffect } from 'react';
+import { useActionState, useRef, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import type { User } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -15,7 +14,7 @@ import { Plus, Trash2 } from 'lucide-react';
 
 interface VoterManagementProps {
   voters: User[];
-  onVoterAdded: (voter: User) => void;
+  onVoterAdded: (voters: User[]) => void;
   onVoterDeleted: (voterId: string) => void;
 }
 
@@ -50,15 +49,15 @@ function DeleteVoterButton({ voterId, onVoterDeleted }: { voterId: string, onVot
 
 
 export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }: VoterManagementProps) {
-  const [state, formAction] = useActionState(addVoter, { success: false, message: '', voter: null });
+  const [state, formAction] = useActionState(addVoter, { success: false, message: '', voters: null });
   const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (state.success && state.voter) {
+    if (state.success && state.voters) {
       toast({ title: 'Success', description: state.message });
       formRef.current?.reset();
-      onVoterAdded(state.voter);
+      onVoterAdded(state.voters);
     } else if (state.message) {
       toast({ title: 'Error', description: state.message, variant: 'destructive' });
     }

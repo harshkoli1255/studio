@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useActionState } from 'react';
 import { BarChart, Users, Percent, Vote, RefreshCcw, LogOut } from 'lucide-react';
 import type { Candidate, User } from '@/lib/types';
 import { Button } from '@/components/ui/button';
@@ -53,8 +53,8 @@ export default function AdminDashboard({
     setCandidates(prev => [...prev, newCandidate].sort((a,b) => a.id - b.id));
   };
   
-  const onVoterAdded = (newVoter: User) => {
-    setVoters(prev => [...prev, newVoter].sort((a,b) => a.name.localeCompare(b.name)));
+  const onVoterAdded = (updatedVoters: User[]) => {
+    setVoters(updatedVoters);
   }
 
   const onVoterDeleted = (deletedVoterId: string) => {

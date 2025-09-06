@@ -196,20 +196,21 @@ const voterSchema = z.object({
     voterName: z.string().min(3, 'Voter name must be at least 3 characters long.'),
 });
 
-export async function addVoter(prevState: any, formData: FormData): Promise<{success: boolean, message: string, voter: User | null}> {
+export async function addVoter(prevState: any, formData: FormData): Promise<{success: boolean, message: string, voters: User[] | null}> {
     const parsed = voterSchema.safeParse({
         voterName: formData.get('voterName'),
     });
 
     if (!parsed.success) {
-        return { success: false, message: parsed.error.errors[0].message, voter: null };
+        return { success: false, message: parsed.error.errors[0].message, voters: null };
     }
 
     try {
-        const newUser = db.addVoter(parsed.data.voterName);
-        return { success: true, message: 'Voter added successfully.', voter: newUser };
+        db.addVoter(parsed.data.voterName);
+        const updatedVoters = db.getUsers();
+        return { success: true, message: 'Voter added successfully.', voters: updatedVoters };
     } catch(e: any) {
-        return { success: false, message: e.message, voter: null };
+        return { success: false, message: e.message, voters: null };
     }
 }
 
