@@ -54,6 +54,7 @@ export default function AdminDashboard({
   const [candidates, setCandidates] = useState<Candidate[]>(initialCandidates);
   const [totalVotes, setTotalVotes] = useState(initialTotalVotes);
   const [voters, setVoters] = useState<User[]>(initialVoters);
+  const [pastWinners, setPastWinners] = useState<PastWinner[]>(initialPastWinners);
   const [activeTab, setActiveTab] = useState('overview');
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
@@ -62,7 +63,8 @@ export default function AdminDashboard({
     setCandidates(initialCandidates);
     setTotalVotes(initialTotalVotes);
     setVoters(initialVoters);
-  }, [initialCandidates, initialTotalVotes, initialVoters]);
+    setPastWinners(initialPastWinners);
+  }, [initialCandidates, initialTotalVotes, initialVoters, initialPastWinners]);
   
   const votedCount = voters.filter(v => v.hasVoted).length;
   const turnout = voters.length > 0 ? (votedCount / voters.length) * 100 : 0;
@@ -102,6 +104,10 @@ export default function AdminDashboard({
       setTotalVotes(prev => prev -1);
     }
     setVoters(prev => prev.filter(v => v.id !== deletedVoterId));
+  }
+
+  const onHistoryCleared = () => {
+    setPastWinners([]);
   }
 
   const handleTabChange = (value: string) => {
@@ -362,7 +368,7 @@ export default function AdminDashboard({
                   />
               </div>
                <div className={activeTab === 'history' ? 'block' : 'hidden sm:block'}>
-                  <PastWinnersList pastWinners={initialPastWinners} />
+                  <PastWinnersList pastWinners={pastWinners} onHistoryCleared={onHistoryCleared} />
               </div>
               <div className={activeTab === 'settings' ? 'block' : 'hidden sm:block'}>
                   <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">

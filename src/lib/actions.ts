@@ -232,3 +232,12 @@ export async function resetVotes() {
     return { success: false, message: 'Could not reset votes.' };
   }
 }
+
+export async function clearHistory() {
+    try {
+        db.clearHistory();
+        return { success: true, message: 'Election history has been cleared.' };
+    } catch(e: any) {
+        return { success: false, message: 'Could not clear election history.' };
+    }
+}

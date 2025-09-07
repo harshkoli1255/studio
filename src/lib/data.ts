@@ -325,4 +325,10 @@ export const db = {
     currentData.electionEnd = null;
     saveData();
   },
+
+  clearHistory: () => {
+    const currentData = getData();
+    currentData.pastWinners = [];
+    saveData();
+  },
 };
