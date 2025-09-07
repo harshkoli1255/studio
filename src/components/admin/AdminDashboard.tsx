@@ -307,7 +307,7 @@ export default function AdminDashboard({
                             <CardHeader className="pb-2 flex-row items-center justify-between">
                               <CardTitle className="text-sm font-medium">Voted</CardTitle>
                                <UserCheck className="text-muted-foreground h-4 w-4"/>
-                            </Header>
+                            </CardHeader>
                             <CardContent>
                               <div className="text-2xl font-bold">{votedCount}</div>
                               <p className="text-xs text-muted-foreground">Have cast their ballot</p>
@@ -317,7 +317,7 @@ export default function AdminDashboard({
                             <CardHeader className="pb-2 flex-row items-center justify-between">
                               <CardTitle className="text-sm font-medium">Turnout</CardTitle>
                                <BarChart3 className="text-muted-foreground h-4 w-4"/>
-                            </Header>
+                            </CardHeader>
                             <CardContent>
                               <div className="text-2xl font-bold">{turnout.toFixed(1)}%</div>
                               <p className="text-xs text-muted-foreground">Voter participation</p>
@@ -401,5 +401,3 @@ export default function AdminDashboard({
     </div>
   );
 }
-
-    
