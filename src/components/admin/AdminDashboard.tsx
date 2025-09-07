@@ -262,8 +262,125 @@ export default function AdminDashboard({
           </DropdownMenu>
         </header>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-            <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="overview" className="sm:block hidden">
-              <TabsList className="flex-wrap h-auto">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+              <div className="sm:hidden">
+                 <div className={activeTab === 'overview' ? 'block' : 'hidden'}>
+                   <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2 mt-4">
+                     <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+                         <Card>
+                            <CardHeader className="pb-2 flex-row items-center justify-between">
+                              <CardTitle className="text-sm font-medium">Total Votes</CardTitle>
+                              <ListChecks className="text-muted-foreground h-4 w-4"/>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="text-2xl font-bold">{totalVotes}</div>
+                              <p className="text-xs text-muted-foreground">Leading: {leadingCandidate}</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2 flex-row items-center justify-between">
+                              <CardTitle className="text-sm font-medium">Total Voters</CardTitle>
+                               <Users className="text-muted-foreground h-4 w-4"/>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="text-2xl font-bold">{voters.length}</div>
+                              <p className="text-xs text-muted-foreground">Registered students</p>
+                            </CardContent>
+                        </Card>
+                         <Card>
+                            <CardHeader className="pb-2 flex-row items-center justify-between">
+                              <CardTitle className="text-sm font-medium">Voted</CardTitle>
+                               <UserCheck className="text-muted-foreground h-4 w-4"/>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="text-2xl font-bold">{votedCount}</div>
+                              <p className="text-xs text-muted-foreground">Have cast their ballot</p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="pb-2 flex-row items-center justify-between">
+                              <CardTitle className="text-sm font-medium">Turnout</CardTitle>
+                               <BarChart3 className="text-muted-foreground h-4 w-4"/>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="text-2xl font-bold">{turnout.toFixed(1)}%</div>
+                              <p className="text-xs text-muted-foreground">Voter participation</p>
+                            </CardContent>
+                        </Card>
+                     </div>
+                     <Summary />
+                  </div>
+                </div>
+                 <div className={activeTab === 'candidates' ? 'block' : 'hidden'}>
+                    <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
+                      <Card className="h-fit">
+                        <CardHeader>
+                          <CardTitle>Live Vote Count</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <CandidatesTable 
+                              candidates={candidates} 
+                              totalVotes={totalVotes}
+                              onCandidateDeleted={onCandidateDeleted}
+                          />
+                        </CardContent>
+                      </Card>
+                      <div className="space-y-4">
+                        <Card>
+                          <CardHeader className="flex flex-row items-center justify-between">
+                              <CardTitle>Add New Candidate</CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                              <CandidateForm onCandidateAdded={onCandidateAdded} />
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
+                 </div>
+                 <div className={activeTab === 'voters' ? 'block' : 'hidden'}>
+                     <VoterManagement 
+                        voters={voters}
+                        onVoterAdded={onVoterAdded}
+                        onVoterDeleted={onVoterDeleted}
+                     />
+                 </div>
+                 <div className={activeTab === 'history' ? 'block' : 'hidden'}>
+                     <PastWinnersList pastWinners={pastWinners} onHistoryCleared={onHistoryCleared} />
+                 </div>
+                 <div className={activeTab === 'settings' ? 'block' : 'hidden'}>
+                    <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
+                      <ElectionTimer initialStatus={initialElectionStatus}/>
+                      <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle>Reset Election</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2">
+                            <p className="text-sm text-muted-foreground">This will permanently delete all votes and reset the election schedule. Candidates and voters will not be deleted.</p>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                  <Button variant="destructive" className="w-full">
+                                    Reset All Votes
+                                  </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete all vote records and reset the election schedule. Candidates and voters will NOT be deleted.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={handleReset}>Continue</AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                        </CardContent>
+                      </Card>
+                    </div>
+                 </div>
+              </div>
+              <TabsList className="hidden sm:flex flex-wrap h-auto">
                 <TabsTrigger value="overview">
                     <Home className="mr-2 h-4 w-4"/>
                     <span>Overview</span>
@@ -285,8 +402,7 @@ export default function AdminDashboard({
                     <span>Settings</span>
                 </TabsTrigger>
               </TabsList>
-            </Tabs>
-             <div className={activeTab === 'overview' ? 'block' : 'hidden sm:block'}>
+              <TabsContent value="overview" className="hidden sm:block">
                  <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2 mt-4">
                      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
                          <Card>
@@ -332,8 +448,8 @@ export default function AdminDashboard({
                      </div>
                      <Summary />
                   </div>
-              </div>
-               <div className={activeTab === 'candidates' ? 'block' : 'hidden sm:block'}>
+              </TabsContent>
+               <TabsContent value="candidates" className="hidden sm:block">
                   <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
                   <Card className="h-fit">
                       <CardHeader>
@@ -359,18 +475,18 @@ export default function AdminDashboard({
                       </Card>
                   </div>
                   </div>
-              </div>
-               <div className={activeTab === 'voters' ? 'block' : 'hidden sm:block'}>
+              </TabsContent>
+               <TabsContent value="voters" className="hidden sm:block">
                   <VoterManagement 
                       voters={voters}
                       onVoterAdded={onVoterAdded}
                       onVoterDeleted={onVoterDeleted}
                   />
-              </div>
-               <div className={activeTab === 'history' ? 'block' : 'hidden sm:block'}>
+              </TabsContent>
+               <TabsContent value="history" className="hidden sm:block">
                   <PastWinnersList pastWinners={pastWinners} onHistoryCleared={onHistoryCleared} />
-              </div>
-              <div className={activeTab === 'settings' ? 'block' : 'hidden sm:block'}>
+              </TabsContent>
+              <TabsContent value="settings" className="hidden sm:block">
                   <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
                   <ElectionTimer initialStatus={initialElectionStatus}/>
                   <Card>
@@ -401,10 +517,10 @@ export default function AdminDashboard({
                       </CardContent>
                       </Card>
                   </div>
-              </div>
+              </TabsContent>
+            </Tabs>
         </main>
       </div>
     </div>
   );
-
-    
+}
