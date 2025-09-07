@@ -55,6 +55,7 @@ export default function AdminDashboard({
   const [totalVotes, setTotalVotes] = useState(initialTotalVotes);
   const [voters, setVoters] = useState<User[]>(initialVoters);
   const [activeTab, setActiveTab] = useState('overview');
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -103,6 +104,11 @@ export default function AdminDashboard({
     setVoters(prev => prev.filter(v => v.id !== deletedVoterId));
   }
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setIsSheetOpen(false);
+  }
+
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
        <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
@@ -110,16 +116,16 @@ export default function AdminDashboard({
           <Link
             href="#"
             className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-             onClick={(e) => { e.preventDefault(); setActiveTab('overview'); }}
+             onClick={(e) => { e.preventDefault(); handleTabChange('overview'); }}
           >
             <Package2 className="h-4 w-4 transition-all group-hover:scale-110" />
             <span className="sr-only">CR Vote</span>
           </Link>
-          <button onClick={() => setActiveTab('overview')} className={`flex h-9 w-9 items-center justify-center rounded-lg ${activeTab === 'overview' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}>
+          <button onClick={() => handleTabChange('overview')} className={`flex h-9 w-9 items-center justify-center rounded-lg ${activeTab === 'overview' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}>
               <Home className="h-5 w-5" />
               <span className="sr-only">Dashboard</span>
           </button>
-           <button onClick={() => setActiveTab('voters')} className={`flex h-9 w-9 items-center justify-center rounded-lg ${activeTab === 'voters' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}>
+           <button onClick={() => handleTabChange('voters')} className={`flex h-9 w-9 items-center justify-center rounded-lg ${activeTab === 'voters' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}>
               <Users className="h-5 w-5" />
               <span className="sr-only">Voters</span>
           </button>
@@ -129,7 +135,7 @@ export default function AdminDashboard({
           </Link>
         </nav>
         <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-4">
-           <button onClick={() => setActiveTab('settings')} className={`flex h-9 w-9 items-center justify-center rounded-lg ${activeTab === 'settings' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}>
+           <button onClick={() => handleTabChange('settings')} className={`flex h-9 w-9 items-center justify-center rounded-lg ${activeTab === 'settings' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}>
               <Settings className="h-5 w-5" />
               <span className="sr-only">Settings</span>
           </button>
@@ -137,7 +143,7 @@ export default function AdminDashboard({
       </aside>
       <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          <Sheet>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button size="icon" variant="outline" className="sm:hidden">
                 <PanelLeft className="h-5 w-5" />
@@ -147,25 +153,39 @@ export default function AdminDashboard({
             <SheetContent side="left" className="sm:max-w-xs">
               <nav className="grid gap-6 text-lg font-medium">
                 <button
-                  onClick={() => setActiveTab('overview')}
+                  onClick={() => handleTabChange('overview')}
                   className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
                 >
                   <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
                   <span className="sr-only">CR Vote</span>
                 </button>
                 <button
-                  onClick={() => setActiveTab('overview')}
+                  onClick={() => handleTabChange('overview')}
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
                   <Home className="h-5 w-5" />
                   Dashboard
                 </button>
                 <button
-                  onClick={() => setActiveTab('voters')}
+                  onClick={() => handleTabChange('candidates')}
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
-                  <Users className="h-5 w-5" />
+                   <Users className="h-5 w-5" />
+                   Candidates
+                </button>
+                <button
+                  onClick={() => handleTabChange('voters')}
+                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                >
+                  <UserCheck className="h-5 w-5" />
                   Voters
+                </button>
+                 <button
+                  onClick={() => handleTabChange('history')}
+                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
+                >
+                  <History className="h-5 w-5" />
+                  History
                 </button>
                  <Link
                   href="/results"
@@ -176,7 +196,7 @@ export default function AdminDashboard({
                   Results
                 </Link>
                  <button
-                  onClick={() => setActiveTab('settings')}
+                  onClick={() => handleTabChange('settings')}
                   className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
                 >
                   <Settings className="h-5 w-5" />
@@ -236,8 +256,8 @@ export default function AdminDashboard({
           </DropdownMenu>
         </header>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-            <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="overview">
-              <TabsList>
+            <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="overview" className="sm:block hidden">
+              <TabsList className="flex-wrap h-auto">
                 <TabsTrigger value="overview">
                     <Home className="mr-2 h-4 w-4"/>
                     <span>Overview</span>
@@ -259,7 +279,8 @@ export default function AdminDashboard({
                     <span>Settings</span>
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="overview">
+            </Tabs>
+             <div className={activeTab === 'overview' ? 'block' : 'hidden sm:block'}>
                  <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2 mt-4">
                      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
                          <Card>
@@ -286,7 +307,7 @@ export default function AdminDashboard({
                             <CardHeader className="pb-2 flex-row items-center justify-between">
                               <CardTitle className="text-sm font-medium">Voted</CardTitle>
                                <UserCheck className="text-muted-foreground h-4 w-4"/>
-                            </CardHeader>
+                            </Header>
                             <CardContent>
                               <div className="text-2xl font-bold">{votedCount}</div>
                               <p className="text-xs text-muted-foreground">Have cast their ballot</p>
@@ -296,7 +317,7 @@ export default function AdminDashboard({
                             <CardHeader className="pb-2 flex-row items-center justify-between">
                               <CardTitle className="text-sm font-medium">Turnout</CardTitle>
                                <BarChart3 className="text-muted-foreground h-4 w-4"/>
-                            </CardHeader>
+                            </Header>
                             <CardContent>
                               <div className="text-2xl font-bold">{turnout.toFixed(1)}%</div>
                               <p className="text-xs text-muted-foreground">Voter participation</p>
@@ -305,8 +326,8 @@ export default function AdminDashboard({
                      </div>
                      <Summary />
                   </div>
-              </TabsContent>
-              <TabsContent value="candidates">
+              </div>
+               <div className={activeTab === 'candidates' ? 'block' : 'hidden sm:block'}>
                   <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
                   <Card className="h-fit">
                       <CardHeader>
@@ -332,18 +353,18 @@ export default function AdminDashboard({
                       </Card>
                   </div>
                   </div>
-              </TabsContent>
-              <TabsContent value="voters">
+              </div>
+               <div className={activeTab === 'voters' ? 'block' : 'hidden sm:block'}>
                   <VoterManagement 
                       voters={voters}
                       onVoterAdded={onVoterAdded}
                       onVoterDeleted={onVoterDeleted}
                   />
-              </TabsContent>
-              <TabsContent value="history">
+              </div>
+               <div className={activeTab === 'history' ? 'block' : 'hidden sm:block'}>
                   <PastWinnersList pastWinners={initialPastWinners} />
-              </TabsContent>
-              <TabsContent value="settings">
+              </div>
+              <div className={activeTab === 'settings' ? 'block' : 'hidden sm:block'}>
                   <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
                   <ElectionTimer initialStatus={initialElectionStatus}/>
                   <Card>
@@ -374,10 +395,11 @@ export default function AdminDashboard({
                       </CardContent>
                       </Card>
                   </div>
-              </TabsContent>
-            </Tabs>
+              </div>
         </main>
       </div>
     </div>
   );
 }
+
+    
