@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { addVoter, deleteVoter } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Loader2, Copy } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 import {
   AlertDialog,
@@ -61,7 +61,7 @@ function DeleteVoterButton({ voterId, onVoterDeleted }: { voterId: string, onVot
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+              <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -85,6 +85,11 @@ export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }
             toast({ title: 'Error', description: result.message, variant: 'destructive' });
         }
     });
+  }
+
+  const handleCopyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({ description: "Copied to clipboard!" });
   }
   
   return (
@@ -135,7 +140,12 @@ export default function VoterManagement({ voters, onVoterAdded, onVoterDeleted }
                     <TableRow key={voter.id}>
                       <TableCell className="font-medium">{voter.name}</TableCell>
                       <TableCell>
-                          <pre className="text-sm font-mono bg-muted px-2 py-1 rounded-md inline-block">{voter.code}</pre>
+                          <div className="flex items-center gap-2">
+                            <pre className="text-sm font-mono bg-muted px-2 py-1 rounded-md inline-block">{voter.code}</pre>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopyToClipboard(voter.code)}>
+                                <Copy className="h-3.5 w-3.5"/>
+                            </Button>
+                          </div>
                       </TableCell>
                       <TableCell>{voter.hasVoted ? 'Yes' : 'No'}</TableCell>
                       <TableCell className="text-right">

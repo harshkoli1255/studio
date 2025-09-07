@@ -8,14 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, LogIn } from 'lucide-react';
 import { Label } from '../ui/label';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" className="w-full" disabled={pending}>
-      {pending ? 'Logging In...' : 'Log In & Vote'}
+      {pending ? 'Logging In...' : <><LogIn className="mr-2 h-4 w-4"/>Log In & Vote</>}
     </Button>
   );
 }
@@ -32,10 +32,10 @@ export default function StudentLoginForm() {
 
   return (
     <form action={formAction}>
-      <Card>
-        <CardHeader>
-            <CardTitle>Student Voting Portal</CardTitle>
-            <CardDescription>Log in to cast your vote for the Class Representative.</CardDescription>
+      <Card className="shadow-md">
+        <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Student Voting Portal</CardTitle>
+            <CardDescription>Enter your name and code to cast your vote.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {state.message && (
@@ -55,7 +55,7 @@ export default function StudentLoginForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="code">Voting Code</Label>
+            <Label htmlFor="code">Unique Voting Code</Label>
             <Input
               id="code"
               name="code"

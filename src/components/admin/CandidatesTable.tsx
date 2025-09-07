@@ -48,7 +48,7 @@ function DeleteCandidateButton({ candidateId, onCandidateDeleted }: { candidateI
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+              <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -81,7 +81,7 @@ export default function CandidatesTable({ candidates, totalVotes, onCandidateDel
                   width={40}
                   height={40}
                   data-ai-hint={candidate.dataAiHint}
-                  className="rounded-full object-cover"
+                  className="rounded-full object-cover aspect-square"
                 />
               </TableCell>
               <TableCell className="font-medium">{candidate.name}</TableCell>
@@ -89,7 +89,7 @@ export default function CandidatesTable({ candidates, totalVotes, onCandidateDel
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Progress value={percentage} className="w-24 h-2"/>
-                  <span className='w-10 text-sm text-muted-foreground'>{percentage.toFixed(1)}%</span>
+                  <span className='w-12 text-sm text-muted-foreground'>{percentage.toFixed(1)}%</span>
                 </div>
               </TableCell>
               <TableCell className="text-right">

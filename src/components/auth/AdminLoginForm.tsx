@@ -1,20 +1,20 @@
 'use client';
 
-import { useActionState, useEffect } from 'react';
+import { useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { adminLogin } from '@/lib/actions';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, LogIn } from 'lucide-react';
 import { Label } from '../ui/label';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" className="w-full" disabled={pending}>
-      {pending ? 'Signing In...' : 'Sign In'}
+      {pending ? 'Signing In...' : <><LogIn className="mr-2 h-4 w-4" /> Sign In</>}
     </Button>
   );
 }
@@ -24,10 +24,10 @@ export default function AdminLoginForm() {
 
   return (
     <form action={formAction}>
-      <Card>
-        <CardHeader>
-          <CardTitle>Admin Panel</CardTitle>
-          <CardDescription>Enter the password to manage the election.</CardDescription>
+      <Card className="shadow-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Admin Login</CardTitle>
+          <CardDescription>Enter credentials to access the dashboard.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {state?.message && (
@@ -45,6 +45,7 @@ export default function AdminLoginForm() {
               placeholder="admin"
               required
               disabled={isPending}
+              defaultValue="admin"
             />
           </div>
           <div className="space-y-2">
@@ -56,6 +57,7 @@ export default function AdminLoginForm() {
               placeholder="••••••••"
               required
               disabled={isPending}
+              defaultValue="password"
             />
           </div>
         </CardContent>

@@ -116,140 +116,127 @@ export default function AdminDashboard({
   }
 
   return (
-    <div className="flex min-h-screen w-full flex-col bg-muted/40">
-       <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-        <nav className="flex flex-col items-center gap-4 px-2 py-4">
-          <Link
-            href="#"
-            className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-             onClick={(e) => { e.preventDefault(); handleTabChange('overview'); }}
-          >
-            <Package2 className="h-4 w-4 transition-all group-hover:scale-110" />
-            <span className="sr-only">CR Vote</span>
-          </Link>
-          <button onClick={() => handleTabChange('overview')} className={`flex h-9 w-9 items-center justify-center rounded-lg ${activeTab === 'overview' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}>
-              <Home className="h-5 w-5" />
-              <span className="sr-only">Dashboard</span>
-          </button>
-           <button onClick={() => handleTabChange('voters')} className={`flex h-9 w-9 items-center justify-center rounded-lg ${activeTab === 'voters' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}>
-              <Users className="h-5 w-5" />
-              <span className="sr-only">Voters</span>
-          </button>
-            <Link href="/results" className="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8" target="_blank">
-              <Trophy className="h-5 w-5" />
-              <span className="sr-only">Results</span>
-          </Link>
-        </nav>
-        <nav className="mt-auto flex flex-col items-center gap-4 px-2 py-4">
-           <button onClick={() => handleTabChange('settings')} className={`flex h-9 w-9 items-center justify-center rounded-lg ${activeTab === 'settings' ? 'bg-accent text-accent-foreground' : 'text-muted-foreground'} transition-colors hover:text-foreground md:h-8 md:w-8`}>
-              <Settings className="h-5 w-5" />
-              <span className="sr-only">Settings</span>
-          </button>
-        </nav>
-      </aside>
-      <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
+    <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+      <div className="hidden border-r bg-muted/40 md:block">
+        <div className="flex h-full max-h-screen flex-col gap-2">
+          <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+            <Link href="/admin" className="flex items-center gap-2 font-semibold">
+              <Package2 className="h-6 w-6" />
+              <span className="">CR Vote Admin</span>
+            </Link>
+          </div>
+          <div className="flex-1">
+            <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+              <button onClick={() => handleTabChange('overview')} className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${activeTab === 'overview' ? 'bg-muted text-primary' : 'text-muted-foreground'}`}>
+                <Home className="h-4 w-4" />
+                Overview
+              </button>
+              <button onClick={() => handleTabChange('candidates')} className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${activeTab === 'candidates' ? 'bg-muted text-primary' : 'text-muted-foreground'}`}>
+                <Users className="h-4 w-4" />
+                Candidates
+              </button>
+              <button onClick={() => handleTabChange('voters')} className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${activeTab === 'voters' ? 'bg-muted text-primary' : 'text-muted-foreground'}`}>
+                <UserCheck className="h-4 w-4" />
+                Voters
+              </button>
+              <button onClick={() => handleTabChange('history')} className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${activeTab === 'history' ? 'bg-muted text-primary' : 'text-muted-foreground'}`}>
+                <History className="h-4 w-4" />
+                History
+              </button>
+              <Link href="/results" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary" target="_blank">
+                <Trophy className="h-4 w-4" />
+                Live Results
+              </Link>
+            </nav>
+          </div>
+          <div className="mt-auto p-4">
+             <button onClick={() => handleTabChange('settings')} className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 transition-all hover:text-primary ${activeTab === 'settings' ? 'bg-muted text-primary' : 'text-muted-foreground'}`}>
+                <Settings className="h-4 w-4" />
+                Settings
+              </button>
+          </div>
+        </div>
+      </div>
+      <div className="flex flex-col">
+        <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6">
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
-              <Button size="icon" variant="outline" className="sm:hidden">
-                <PanelLeft className="h-5 w-5" />
-                <span className="sr-only">Toggle Menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="sm:max-w-xs">
-              <nav className="grid gap-6 text-lg font-medium">
-                <button
-                  onClick={() => handleTabChange('overview')}
-                  className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
-                >
-                  <Package2 className="h-5 w-5 transition-all group-hover:scale-110" />
-                  <span className="sr-only">CR Vote</span>
-                </button>
-                <button
-                  onClick={() => handleTabChange('overview')}
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  <Home className="h-5 w-5" />
-                  Dashboard
-                </button>
-                <button
-                  onClick={() => handleTabChange('candidates')}
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                   <Users className="h-5 w-5" />
-                   Candidates
-                </button>
-                <button
-                  onClick={() => handleTabChange('voters')}
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  <UserCheck className="h-5 w-5" />
-                  Voters
-                </button>
-                 <button
-                  onClick={() => handleTabChange('history')}
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  <History className="h-5 w-5" />
-                  History
-                </button>
-                 <Link
-                  href="/results"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                   target="_blank"
-                >
-                  <Trophy className="h-5 w-5" />
-                  Results
-                </Link>
-                 <button
-                  onClick={() => handleTabChange('settings')}
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  <Settings className="h-5 w-5" />
-                  Settings
-                </button>
-              </nav>
-            </SheetContent>
-          </Sheet>
-          <Breadcrumb className="hidden md:flex">
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <button onClick={() => setActiveTab('overview')}>Dashboard</button>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-               <BreadcrumbItem>
-                <BreadcrumbPage className="capitalize">{activeTab}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          <div className="relative ml-auto flex-1 md:grow-0">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search..."
-              className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]"
-            />
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
                 size="icon"
-                className="overflow-hidden rounded-full"
+                className="shrink-0 md:hidden"
               >
-                 <UserCheck className="h-5 w-5" />
+                <PanelLeft className="h-5 w-5" />
+                <span className="sr-only">Toggle navigation menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="flex flex-col">
+              <nav className="grid gap-2 text-base font-medium">
+                <Link
+                  href="#"
+                  className="flex items-center gap-2 text-lg font-semibold mb-4"
+                  onClick={(e) => { e.preventDefault(); handleTabChange('overview'); }}
+                >
+                  <Package2 className="h-6 w-6" />
+                  <span >CR Vote Admin</span>
+                </Link>
+                <button onClick={() => handleTabChange('overview')} className={`flex items-center gap-4 rounded-xl px-3 py-2 ${activeTab === 'overview' ? 'bg-muted text-primary' : 'text-muted-foreground'} hover:text-foreground`}>
+                  <Home className="h-5 w-5" />
+                  Overview
+                </button>
+                <button onClick={() => handleTabChange('candidates')} className={`flex items-center gap-4 rounded-xl px-3 py-2 ${activeTab === 'candidates' ? 'bg-muted text-primary' : 'text-muted-foreground'} hover:text-foreground`}>
+                   <Users className="h-5 w-5" />
+                   Candidates
+                </button>
+                <button onClick={() => handleTabChange('voters')} className={`flex items-center gap-4 rounded-xl px-3 py-2 ${activeTab === 'voters' ? 'bg-muted text-primary' : 'text-muted-foreground'} hover:text-foreground`}>
+                  <UserCheck className="h-5 w-5" />
+                  Voters
+                </button>
+                 <button onClick={() => handleTabChange('history')} className={`flex items-center gap-4 rounded-xl px-3 py-2 ${activeTab === 'history' ? 'bg-muted text-primary' : 'text-muted-foreground'} hover:text-foreground`}>
+                  <History className="h-5 w-5" />
+                  History
+                </button>
+                 <Link href="/results" className="flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground" target="_blank">
+                  <Trophy className="h-5 w-5" />
+                  Live Results
+                </Link>
+              </nav>
+              <div className="mt-auto">
+                 <button onClick={() => handleTabChange('settings')} className={`flex items-center gap-4 rounded-xl px-3 py-2 ${activeTab === 'settings' ? 'bg-muted text-primary' : 'text-muted-foreground'} hover:text-foreground`}>
+                    <Settings className="h-5 w-5" />
+                    Settings
+                  </button>
+              </div>
+            </SheetContent>
+          </Sheet>
+
+          <div className="w-full flex-1">
+            <form>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="search"
+                  placeholder="Search..."
+                  className="w-full appearance-none bg-background pl-8 shadow-none md:w-2/3 lg:w-1/3"
+                />
+              </div>
+            </form>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="secondary" size="icon" className="rounded-full">
+                <UserCheck className="h-5 w-5" />
+                <span className="sr-only">Toggle user menu</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => setActiveTab('settings')}>Settings</DropdownMenuItem>
-              <DropdownMenuSeparator />
                <DropdownMenuItem asChild>
                   <Link href="/">Student View</Link>
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <form action={logout}>
                     <button type="submit" className="flex items-center w-full text-left">
@@ -261,148 +248,12 @@ export default function AdminDashboard({
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
-        <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
+          <div className="flex items-center">
+            <h1 className="text-lg font-semibold md:text-2xl capitalize">{activeTab}</h1>
+          </div>
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <div className="sm:hidden">
-                 <div className={activeTab === 'overview' ? 'block' : 'hidden'}>
-                   <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2 mt-4">
-                     <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
-                         <Card>
-                            <CardHeader className="pb-2 flex-row items-center justify-between">
-                              <CardTitle className="text-sm font-medium">Total Votes</CardTitle>
-                              <ListChecks className="text-muted-foreground h-4 w-4"/>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="text-2xl font-bold">{totalVotes}</div>
-                              <p className="text-xs text-muted-foreground">Leading: {leadingCandidate}</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="pb-2 flex-row items-center justify-between">
-                              <CardTitle className="text-sm font-medium">Total Voters</CardTitle>
-                               <Users className="text-muted-foreground h-4 w-4"/>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="text-2xl font-bold">{voters.length}</div>
-                              <p className="text-xs text-muted-foreground">Registered students</p>
-                            </CardContent>
-                        </Card>
-                         <Card>
-                            <CardHeader className="pb-2 flex-row items-center justify-between">
-                              <CardTitle className="text-sm font-medium">Voted</CardTitle>
-                               <UserCheck className="text-muted-foreground h-4 w-4"/>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="text-2xl font-bold">{votedCount}</div>
-                              <p className="text-xs text-muted-foreground">Have cast their ballot</p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="pb-2 flex-row items-center justify-between">
-                              <CardTitle className="text-sm font-medium">Turnout</CardTitle>
-                               <BarChart3 className="text-muted-foreground h-4 w-4"/>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="text-2xl font-bold">{turnout.toFixed(1)}%</div>
-                              <p className="text-xs text-muted-foreground">Voter participation</p>
-                            </CardContent>
-                        </Card>
-                     </div>
-                     <Summary />
-                  </div>
-                </div>
-                 <div className={activeTab === 'candidates' ? 'block' : 'hidden'}>
-                    <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
-                      <Card className="h-fit">
-                        <CardHeader>
-                          <CardTitle>Live Vote Count</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <CandidatesTable 
-                              candidates={candidates} 
-                              totalVotes={totalVotes}
-                              onCandidateDeleted={onCandidateDeleted}
-                          />
-                        </CardContent>
-                      </Card>
-                      <div className="space-y-4">
-                        <Card>
-                          <CardHeader className="flex flex-row items-center justify-between">
-                              <CardTitle>Add New Candidate</CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                              <CandidateForm onCandidateAdded={onCandidateAdded} />
-                          </CardContent>
-                        </Card>
-                      </div>
-                    </div>
-                 </div>
-                 <div className={activeTab === 'voters' ? 'block' : 'hidden'}>
-                     <VoterManagement 
-                        voters={voters}
-                        onVoterAdded={onVoterAdded}
-                        onVoterDeleted={onVoterDeleted}
-                     />
-                 </div>
-                 <div className={activeTab === 'history' ? 'block' : 'hidden'}>
-                     <PastWinnersList pastWinners={pastWinners} onHistoryCleared={onHistoryCleared} />
-                 </div>
-                 <div className={activeTab === 'settings' ? 'block' : 'hidden'}>
-                    <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
-                      <ElectionTimer initialStatus={initialElectionStatus}/>
-                      <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle>Reset Election</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2">
-                            <p className="text-sm text-muted-foreground">This will permanently delete all votes and reset the election schedule. Candidates and voters will not be deleted.</p>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                  <Button variant="destructive" className="w-full">
-                                    Reset All Votes
-                                  </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete all vote records and reset the election schedule. Candidates and voters will NOT be deleted.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleReset}>Continue</AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                        </CardContent>
-                      </Card>
-                    </div>
-                 </div>
-              </div>
-              <TabsList className="hidden sm:flex flex-wrap h-auto">
-                <TabsTrigger value="overview">
-                    <Home className="mr-2 h-4 w-4"/>
-                    <span>Overview</span>
-                </TabsTrigger>
-                <TabsTrigger value="candidates">
-                    <Users className="mr-2 h-4 w-4"/>
-                    <span>Candidates</span>
-                </TabsTrigger>
-                <TabsTrigger value="voters">
-                    <UserCheck className="mr-2 h-4 w-4"/>
-                    <span>Voters</span>
-                </TabsTrigger>
-                <TabsTrigger value="history">
-                    <History className="mr-2 h-4 w-4"/>
-                    <span>History</span>
-                </TabsTrigger>
-                <TabsTrigger value="settings">
-                    <Settings className="mr-2 h-4 w-4"/>
-                    <span>Settings</span>
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="overview" className="hidden sm:block">
+              <TabsContent value="overview">
                  <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2 mt-4">
                      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
                          <Card>
@@ -449,49 +300,51 @@ export default function AdminDashboard({
                      <Summary />
                   </div>
               </TabsContent>
-               <TabsContent value="candidates" className="hidden sm:block">
+               <TabsContent value="candidates">
                   <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
-                  <Card className="h-fit">
+                    <div className="space-y-4">
+                      <Card className="h-fit">
+                        <CardHeader>
+                          <CardTitle>Add New Candidate</CardTitle>
+                           <CardDescription>Add a new candidate to the ballot.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <CandidateForm onCandidateAdded={onCandidateAdded} />
+                        </CardContent>
+                      </Card>
+                    </div>
+                    <Card className="h-fit">
                       <CardHeader>
-                      <CardTitle>Live Vote Count</CardTitle>
+                        <CardTitle>Live Vote Count</CardTitle>
+                         <CardDescription>Current standings of all candidates.</CardDescription>
                       </CardHeader>
                       <CardContent>
-                      <CandidatesTable 
+                        <CandidatesTable 
                           candidates={candidates} 
                           totalVotes={totalVotes}
                           onCandidateDeleted={onCandidateDeleted}
-                      />
+                        />
                       </CardContent>
-                  </Card>
-                  
-                  <div className="space-y-4">
-                      <Card>
-                      <CardHeader className="flex flex-row items-center justify-between">
-                          <CardTitle>Add New Candidate</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                          <CandidateForm onCandidateAdded={onCandidateAdded} />
-                      </CardContent>
-                      </Card>
-                  </div>
+                    </Card>
                   </div>
               </TabsContent>
-               <TabsContent value="voters" className="hidden sm:block">
+               <TabsContent value="voters">
                   <VoterManagement 
                       voters={voters}
                       onVoterAdded={onVoterAdded}
                       onVoterDeleted={onVoterDeleted}
                   />
               </TabsContent>
-               <TabsContent value="history" className="hidden sm:block">
+               <TabsContent value="history">
                   <PastWinnersList pastWinners={pastWinners} onHistoryCleared={onHistoryCleared} />
               </TabsContent>
-              <TabsContent value="settings" className="hidden sm:block">
+              <TabsContent value="settings">
                   <div className="grid gap-4 md:gap-8 lg:grid-cols-2 mt-4">
-                  <ElectionTimer initialStatus={initialElectionStatus}/>
-                  <Card>
-                      <CardHeader className="flex flex-row items-center justify-between">
+                    <ElectionTimer initialStatus={initialElectionStatus}/>
+                    <Card>
+                      <CardHeader>
                           <CardTitle>Reset Election</CardTitle>
+                          <CardDescription>Delete all votes and reset the election schedule.</CardDescription>
                       </CardHeader>
                       <CardContent className="space-y-2">
                           <p className="text-sm text-muted-foreground">This will permanently delete all votes and reset the election schedule. Candidates and voters will not be deleted.</p>
@@ -510,7 +363,7 @@ export default function AdminDashboard({
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction onClick={handleReset}>Continue</AlertDialogAction>
+                                  <AlertDialogAction onClick={handleReset} className="bg-destructive hover:bg-destructive/90">Continue</AlertDialogAction>
                               </AlertDialogFooter>
                               </AlertDialogContent>
                           </AlertDialog>

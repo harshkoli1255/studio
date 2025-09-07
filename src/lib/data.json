@@ -2,19 +2,7 @@
   "users": [],
   "candidates": [],
   "votes": [],
-  "pastWinners": [
-    {
-      "date": "2025-09-06T19:27:36.052Z",
-      "winners": [
-        {
-          "id": 2,
-          "name": "rudraanil.___",
-          "voteCount": 2
-        }
-      ],
-      "totalVotes": 2
-    }
-  ],
+  "pastWinners": [],
   "electionStart": "2025-09-06T19:16:00.000Z",
   "electionEnd": "2025-09-06T21:27:00.000Z"
 }
