@@ -119,12 +119,11 @@ export async function castVote(candidateId: number) {
   return db.castVote(studentId, candidateId);
 }
 
-export async function addCandidate(prevState: any, formData: FormData): Promise<{ success: boolean; message: string; candidates: Candidate[] | null; actionId: string; }> {
-  const actionId = crypto.randomUUID();
+export async function addCandidate(prevState: any, formData: FormData): Promise<{ success: boolean; message: string; candidates: Candidate[] | null; }> {
   const parsed = candidateSchema.safeParse(Object.fromEntries(formData));
 
   if (!parsed.success) {
-    return { success: false, message: parsed.error.errors.map(e => e.message).join(', '), candidates: null, actionId };
+    return { success: false, message: parsed.error.errors.map(e => e.message).join(', '), candidates: null };
   }
   
   let finalImageUrl = parsed.data.imageUrl;
@@ -133,13 +132,13 @@ export async function addCandidate(prevState: any, formData: FormData): Promise<
   if (imageFile instanceof File && imageFile.size > 0) {
     const fileValidation = imageFileSchema.safeParse(imageFile);
     if (!fileValidation.success) {
-      return { success: false, message: fileValidation.error.errors.map(e => e.message).join(', '), candidates: null, actionId };
+      return { success: false, message: fileValidation.error.errors.map(e => e.message).join(', '), candidates: null };
     }
     finalImageUrl = await fileToDataUrl(imageFile);
   }
   
   if (!finalImageUrl) {
-    return { success: false, message: "An image is required.", candidates: null, actionId };
+    return { success: false, message: "An image is required.", candidates: null };
   }
 
   const updatedCandidates = db.addCandidate({
@@ -149,7 +148,7 @@ export async function addCandidate(prevState: any, formData: FormData): Promise<
     dataAiHint: parsed.data.dataAiHint,
   });
   
-  return { success: true, message: 'Candidate added successfully.', candidates: updatedCandidates, actionId };
+  return { success: true, message: 'Candidate added successfully.', candidates: updatedCandidates };
 }
 
 

@@ -27,26 +27,22 @@ interface CandidateFormProps {
 }
 
 export default function CandidateForm({ onCandidateAdded }: CandidateFormProps) {
-  const [state, formAction] = useActionState(addCandidate, { success: false, message: '', candidates: null, actionId: '' });
+  const [state, formAction] = useActionState(addCandidate, { success: false, message: '', candidates: null });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [lastActionId, setLastActionId] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (state.actionId && state.actionId !== lastActionId) {
-      if (state.success && state.candidates) {
-        toast({ title: 'Success', description: state.message });
-        formRef.current?.reset();
-        setImagePreview(null);
-        onCandidateAdded(state.candidates);
-      } else if (state.message) {
-        toast({ title: 'Error', description: state.message, variant: 'destructive' });
-      }
-      setLastActionId(state.actionId);
+    if (state.success && state.candidates) {
+      toast({ title: 'Success', description: state.message });
+      formRef.current?.reset();
+      setImagePreview(null);
+      onCandidateAdded(state.candidates);
+    } else if (state.message && !state.success) {
+      toast({ title: 'Error', description: state.message, variant: 'destructive' });
     }
-  }, [state, toast, onCandidateAdded, lastActionId]);
+  }, [state]);
   
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
