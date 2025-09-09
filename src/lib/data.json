@@ -1,24 +1,5 @@
 {
-  "users": [
-    {
-      "id": "75d974e9-cf01-4ab1-aa03-cc91364af353",
-      "name": "Harsh Koli",
-      "code": "9D0E253E",
-      "hasVoted": false
-    },
-    {
-      "id": "306753fb-c8a9-4ab5-ae4f-33f9221400ee",
-      "name": "Kartik Upadhyay",
-      "code": "57F1A898",
-      "hasVoted": false
-    },
-    {
-      "id": "c1980b73-b443-4b33-a527-513bf589752f",
-      "name": "ayush",
-      "code": "7FECD06D",
-      "hasVoted": false
-    }
-  ],
+  "users": [],
   "candidates": [
     {
       "name": "Harsh Koli",
@@ -39,6 +20,6 @@
   ],
   "votes": [],
   "pastWinners": [],
-  "electionStart": "2025-09-06T19:16:00.000Z",
-  "electionEnd": "2025-09-07T13:27:00.000Z"
+  "electionStart": "2025-09-09T02:41:00.000Z",
+  "electionEnd": "2025-09-09T13:27:00.000Z"
 }
