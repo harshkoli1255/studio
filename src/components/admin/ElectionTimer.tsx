@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -37,21 +37,20 @@ export default function ElectionTimer({ initialStatus }: ElectionTimerProps) {
     return format(new Date(date), 'HH:mm');
   };
 
-  const [startDate, setStartDate] = useState<Date | undefined>(
-    initialStatus.start ? new Date(initialStatus.start) : undefined
-  );
-  const [startTime, setStartTime] = useState<string>(
-    getInitialTime(initialStatus.start)
-  );
-  const [endDate, setEndDate] = useState<Date | undefined>(
-    initialStatus.end ? new Date(initialStatus.end) : undefined
-  );
-  const [endTime, setEndTime] = useState<string>(
-    getInitialTime(initialStatus.end)
-  );
-
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [startTime, setStartTime] = useState<string>('00:00');
+  const [endDate, setEndDate] = useState<Date | undefined>();
+  const [endTime, setEndTime] = useState<string>('00:00');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    setStartDate(initialStatus.start ? new Date(initialStatus.start) : undefined);
+    setStartTime(getInitialTime(initialStatus.start));
+    setEndDate(initialStatus.end ? new Date(initialStatus.end) : undefined);
+    setEndTime(getInitialTime(initialStatus.end));
+  }, [initialStatus]);
+
 
   const combineDateTime = (date: Date | undefined, time: string): Date | null => {
     if (!date) return null;
@@ -72,6 +71,8 @@ export default function ElectionTimer({ initialStatus }: ElectionTimerProps) {
         title: 'Success',
         description: 'Election schedule has been updated.',
       });
+      // The parent component will re-render with new initialStatus
+      // which will trigger the useEffect to update the state
     } else {
       toast({
         title: 'Error',
@@ -90,6 +91,7 @@ export default function ElectionTimer({ initialStatus }: ElectionTimerProps) {
         title: 'Success!',
         description: 'The election has been ended. Displaying results.',
       });
+      // Reload to reflect ended status everywhere
       window.location.reload();
     } else {
       toast({
